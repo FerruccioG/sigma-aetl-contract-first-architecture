@@ -1,0 +1,436 @@
+{
+  "name": "SIGMA-AETL Contract Validator v1.0 (PROD)",
+  "nodes": [
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://sigma-aetl-validator:8000/api/validate",
+        "jsonParameters": true,
+        "options": {
+          "bodyContentType": "json",
+          "followAllRedirects": true,
+          "timeout": 30000
+        },
+        "bodyParametersJson": "={{ $json.validator_payload }}"
+      },
+      "id": "24cc0d6d-bc03-4a7c-8347-f3a9904ca6e3",
+      "name": "POST → SIGMA-AETL Validator",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "64c2fe15-7841-42a5-8ad8-502e31f33d25",
+              "leftValue": "={{ $json.status && $json.status.toUpperCase() === 'PASSED' }}",
+              "rightValue": "\"PASSED\"",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -176,
+        64
+      ],
+      "id": "4777cbc9-f341-482a-8e3c-d06bf156bd74",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "37aa5d83-fd17-4dbd-97af-548c3e05284e",
+              "name": "clean_data",
+              "value": "={{ $json[\"clean_data\"] }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        32,
+        -48
+      ],
+      "id": "f7359ce9-17de-42ff-8eee-5aa1703d54f8",
+      "name": "TRUE Branch (Validation Passed)"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "=={\n  \"shipment_id\": \"{{ $json.clean_data.shipment_id }}\",\n\n  \"weight_kg\": {{ Number($json.clean_data.weight_kg ?? 0) }},\n\n  \"destination\": \"{{ \n    ($json.clean_data.destination ?? '')\n      .trim()\n      .toLowerCase()\n  }}\",\n\n  \"priority\": {{ Number($json.clean_data.priority ?? 0) }},\n\n  \"is_priority_shipment\": {{\n    Number($json.clean_data.priority ?? 0) > 1\n  }},\n\n  \"is_heavy\": {{\n    Number($json.clean_data.weight_kg ?? 0) > 50\n  }},\n\n  \"route\": \"{{ \n    (\n      ($json.clean_data.destination ?? '')\n        .trim()\n        .toLowerCase()\n    ) === 'dublin'\n      ? 'EU-HUB'\n      : 'INT-HUB'\n  }}\",\n\n  \"processed_at\": \"{{ $now.toISO() }}\",\n\n  \"processed_by\": \"SIGMA-AETL / n8n\",\n\n  \"pipeline_version\": \"1.0.0\",\n\n  \"schema_version\": \"shipment.clean.v1\",\n\n  \"machine_generated_id\": \"{{ \n    $json.clean_data.shipment_id + '-' + Date.now()\n  }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        288,
+        -48
+      ],
+      "id": "f7d19aa1-ee26-422c-abe0-69961d8acfb7",
+      "name": "Transform Clean Data"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "validated_shipments",
+        "fields": "=shipment_id,weight_kg,destination,priority,is_priority_shipment,is_heavy,processed_at,processed_by,pipeline_version,route,machine_generated_id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        544,
+        -48
+      ],
+      "id": "71aa5235-2e69-41b4-965d-1231db89f2e4",
+      "name": "Insert documents",
+      "credentials": {
+        "mongoDb": {
+          "id": "xLRaeXWkW8QUAsDd",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "qwen2.5:7b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        512
+      ],
+      "id": "cc5fcef8-0029-4215-9dd9-c081d21bf014",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "8NAbilK61S7lq0UV",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are SIGMA-AETL Sentinel, an autonomous ETL diagnostics engine.\n\nYour task:\nAnalyze the provided JSON input representing a failed ETL validation.\n\nSTRICT RULES:\n- You MUST return a SINGLE valid JSON object.\n- DO NOT include explanations, markdown, comments, or prose.\n- DO NOT wrap the response in backticks.\n- DO NOT include fields that are not requested.\n- If information is missing, use null.\n\nOUTPUT FORMAT (MANDATORY):\n\n{\n  \"sentinel_diagnosis\": {\n    \"root_cause\": string | null,\n    \"why_it_failed\": string | null,\n    \"missing_or_invalid_fields\": string[],\n    \"proposed_fix\": string | null,\n    \"business_implication\": string | null\n  },\n  \"sentinel_metadata\": {\n    \"severity\": \"ERROR\" | \"WARN\",\n    \"confidence\": \"HIGH\" | \"MEDIUM\" | \"LOW\",\n    \"generated_at\": ISO-8601 timestamp string\n  }\n}\n\nBase your diagnosis ONLY on the input JSON.",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -288,
+        352
+      ],
+      "id": "481cfd3f-88a8-455e-8846-2704580e3e6d",
+      "name": "SIGMA-AETL Sentinel"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "failed_shipments",
+        "fields": "=root_cause,missing_or_invalid_fields,why_it_failed,proposed_fix,business_implication,workflow_run_id,received_at,validator_version,source_system,pipeline_version,log_level,etl_metadata,transport_metadata",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        576,
+        352
+      ],
+      "id": "22e6ea2f-f567-4e27-a057-79bb6e6ba42c",
+      "name": "Insert documents1",
+      "credentials": {
+        "mongoDb": {
+          "id": "xLRaeXWkW8QUAsDd",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * SIGMA-AETL — Normalized JSON Document\n * Option A (RECOMMENDED): PASS-THROUGH metadata\n *\n * Rules:\n * - DO NOT generate IDs here\n * - DO NOT modify etl_metadata\n * - DO NOT modify transport_metadata\n * - Normalize top-level fields only\n */\n\nconst input = $json;\n\n// -----------------------------\n// 1. Normalize top-level fields\n// -----------------------------\nconst normalized = {\n  root_cause: input.root_cause ?? \"unknown\",\n  missing_or_invalid_fields: Array.isArray(input.missing_or_invalid_fields)\n    ? input.missing_or_invalid_fields\n    : [],\n  why_it_failed: input.why_it_failed ?? \"unknown\",\n  proposed_fix: input.proposed_fix ?? \"unknown\",\n  business_implication: input.business_implication ?? \"unknown\",\n  workflow_run_id: input.workflow_run_id ?? \"unknown\",\n  received_at: input.received_at ?? new Date().toISOString(),\n  validator_version: input.validator_version ?? \"v1.0.0\",\n  source_system: input.source_system ?? \"SIGMA-AETL\",\n  pipeline_version: input.pipeline_version ?? \"v1.0.0\",\n  log_level: input.log_level ?? \"ERROR\"\n};\n\n// ---------------------------------\n// 2. PASS-THROUGH metadata (CRITICAL)\n// ---------------------------------\nnormalized.etl_metadata = input.etl_metadata ?? null;\nnormalized.transport_metadata = input.transport_metadata ?? null;\nnormalized.kafka_metadata = input.kafka_metadata ?? null;\n\n// ---------------------------------\n// 3. Emit final Mongo-safe document\n// ---------------------------------\nreturn normalized;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        352
+      ],
+      "id": "59632f45-04b1-4e9d-a740-6dee21216eae",
+      "name": "Normalized JSON document"
+    },
+    {
+      "parameters": {
+        "topic": "sigma.failed_shipments",
+        "groupId": "n8n-sigma-aetl-validator",
+        "options": {
+          "autoCommitThreshold": 1,
+          "autoCommitInterval": 5000
+        }
+      },
+      "type": "n8n-nodes-base.kafkaTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -768,
+        -112
+      ],
+      "id": "b76e35cf-550d-446e-9505-84d387234fcc",
+      "name": "Kafka Trigger",
+      "credentials": {
+        "kafka": {
+          "id": "LCpyB5s79tGOOvxD",
+          "name": "Kafka account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Unwrap Kafka Message (robust + diagnostic)\n//\n// Goals:\n// 1) Extract the Kafka \"message value\" reliably (string/object/buffer)\n// 2) Parse JSON only when it actually looks like JSON\n// 3) Preserve kafka_metadata\n// 4) Emit diagnostics so we can confirm what the trigger is delivering\n\nconst msg = $json;\n\n// -------------------------------\n// Helper: normalize candidate value to string/object\n// -------------------------------\nfunction normalizeValue(v) {\n  if (v === undefined || v === null) return { kind: \"null\", value: null, text: null };\n\n  // Buffer (Node.js)\n  if (typeof Buffer !== \"undefined\" && Buffer.isBuffer(v)) {\n    const text = v.toString(\"utf8\");\n    return { kind: \"buffer\", value: v, text };\n  }\n\n  // Already an object (including arrays)\n  if (typeof v === \"object\") {\n    return { kind: \"object\", value: v, text: null };\n  }\n\n  // Primitive string/number/bool\n  if (typeof v === \"string\") return { kind: \"string\", value: v, text: v };\n  return { kind: typeof v, value: v, text: String(v) };\n}\n\n// -------------------------------\n// Find the most likely Kafka payload field\n// -------------------------------\nconst candidates = {\n  message: msg.message,\n  value: msg.value,\n  data: msg.data,\n};\n\nlet chosenKey = null;\nlet chosen = null;\n\nfor (const k of Object.keys(candidates)) {\n  if (candidates[k] !== undefined) {\n    chosenKey = k;\n    chosen = normalizeValue(candidates[k]);\n    break;\n  }\n}\n\nif (!chosen) {\n  chosenKey = \"none\";\n  chosen = { kind: \"missing\", value: null, text: null };\n}\n\n// -------------------------------\n// Attempt JSON parse (only if it looks like JSON)\n// -------------------------------\nlet payload = null;\nlet is_parse_error = false;\nlet parse_error = null;\n\ntry {\n  if (chosen.kind === \"object\") {\n    payload = chosen.value;\n  } else if (chosen.kind === \"string\" || chosen.kind === \"buffer\") {\n    const rawText = (chosen.text ?? \"\").trim();\n\n    // If empty -> treat as error (this matches your “Unexpected end of JSON input” symptom)\n    if (!rawText) {\n      is_parse_error = true;\n      parse_error = \"Empty message value (cannot JSON.parse)\";\n      payload = { _raw_message: rawText, _parse_error: parse_error };\n    } else {\n      const looksJson = rawText.startsWith(\"{\") || rawText.startsWith(\"[\");\n      if (looksJson) {\n        payload = JSON.parse(rawText);\n      } else {\n        // Not JSON: keep as raw string\n        payload = { _raw_message: rawText };\n      }\n    }\n  } else {\n    payload = { _raw_message: chosen.text ?? null };\n  }\n} catch (e) {\n  is_parse_error = true;\n  parse_error = e?.message ?? String(e);\n  payload = { _raw_message: chosen.text ?? null, _parse_error: parse_error };\n}\n\n// -------------------------------\n// Defensive timestamp handling\n// -------------------------------\nlet kafkaTimestamp = null;\nif (msg.timestamp) {\n  try {\n    const parsed = new Date(msg.timestamp);\n    if (!isNaN(parsed.getTime())) kafkaTimestamp = parsed.toISOString();\n  } catch (_) {}\n}\n\n// -------------------------------\n// Kafka metadata (what we can extract)\n// -------------------------------\nconst kafka_metadata = {\n  topic: msg.topic ?? null,\n  partition: msg.partition ?? null,\n  offset: msg.offset ?? null,\n  key: msg.key ?? null,\n  timestamp: kafkaTimestamp,\n  consumer_group: \"n8n-sigma-aetl-validator\",\n};\n\n// -------------------------------\n// Output: include diagnostics so we can see what Kafka Trigger is emitting\n// -------------------------------\nreturn [\n  {\n    json: {\n      // Diagnostics first\n      unwrap_debug: {\n        chosenField: chosenKey,\n        chosenKind: chosen.kind,\n        rawPreview:\n          typeof chosen.text === \"string\"\n            ? chosen.text.slice(0, 500)\n            : null,\n        parse_error,\n      },\n\n      is_parse_error,\n      payload,\n      kafka_metadata,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -768,
+        64
+      ],
+      "id": "9e83c7b0-5f5c-49bc-94cd-7b32ccb7da75",
+      "name": "Unwrap Kafka Message"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * ATTACH ETL METADATA — CANONICAL + SAFE VERSION\n * - Guarantees unique machine_generated_id\n * - Preserves Kafka metadata if present\n * - Prevents MongoDB duplicate-key violations\n * - Execution-safe and idempotent\n */\n\nconst input = $json;\n\n/**\n * 1. Resolve execution identity\n */\nconst workflowRunId =\n  input.workflow_run_id ??\n  input.etl_metadata?.workflow_run_id ??\n  $execution.id;\n\nconst executionTimestamp = new Date().toISOString();\n\n/**\n * 2. Generate a HARD UNIQUE machine_generated_id\n *    (Never allow \"unknown\")\n */\nconst machineGeneratedId =\n  input.etl_metadata?.machine_generated_id &&\n  input.etl_metadata.machine_generated_id !== \"unknown\"\n    ? input.etl_metadata.machine_generated_id\n    : `${workflowRunId}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;\n\n/**\n * 3. Preserve Kafka metadata EXACTLY if present\n */\nconst kafkaMetadata = input.kafka_metadata ?? null;\n\n/**\n * 4. Build ETL metadata (execution-scoped, not transport-scoped)\n */\nconst etl_metadata = {\n  workflow_run_id: workflowRunId,\n  machine_generated_id: machineGeneratedId,\n  validator_version: input.validator_version ?? \"v1.0.0\",\n  sentinel_version: \"sigma-sentinel-v1\",\n  etl_timestamp_utc: executionTimestamp,\n  is_valid: Boolean(input.is_valid),\n  diagnostic_summary: input.diagnostic_summary ?? null,\n  diagnostic_details: input.diagnostic_details ?? null,\n  source_payload_raw: input.source_payload_raw ?? null\n};\n\n/**\n * 5. Build transport metadata\n */\nconst transport_metadata = kafkaMetadata\n  ? {\n      type: \"kafka\",\n      kafka: {\n        topic: kafkaMetadata.topic ?? null,\n        partition: kafkaMetadata.partition ?? null,\n        offset: kafkaMetadata.offset ?? null,\n        key: kafkaMetadata.key ?? null,\n        consumer_group: kafkaMetadata.consumer_group ?? \"n8n-sigma-aetl-validator\",\n        timestamp: kafkaMetadata.timestamp ?? executionTimestamp\n      }\n    }\n  : {\n      type: \"manual\",\n      manual: {\n        trigger: \"n8n-manual-execution\",\n        user: \"system\",\n        timestamp: executionTimestamp\n      }\n    };\n\n/**\n * 6. Emit FINAL document (Mongo-safe)\n */\nreturn {\n  ...input,\n  kafka_metadata: kafkaMetadata,\n  etl_metadata,\n  transport_metadata\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        96,
+        352
+      ],
+      "id": "466c320e-03e7-4df2-bd2d-42cb25f95674",
+      "name": "Attach ETLMetadata"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $json;\n\n// ---- Transport metadata resolution (Kafka-first, deterministic) ----\n\n// Support BOTH conventions:\n// - kafka_metadata (from Prepare Validator Payload node)\n// - _kafka_metadata (from legacy Unwrap node)\nconst kafkaMeta =\n  input.kafka_metadata ??\n  input._kafka_metadata ??\n  null;\n\n// HARD ASSERT: if Kafka metadata exists → transport = kafka\nconst transport_metadata = kafkaMeta\n  ? {\n      type: \"kafka\",\n      kafka: {\n        topic: kafkaMeta.topic ?? null,\n        partition: kafkaMeta.partition ?? null,\n        offset: kafkaMeta.offset ?? null,\n        consumer_group: kafkaMeta.consumer_group ?? \"n8n-sigma-aetl-validator\",\n        timestamp: kafkaMeta.timestamp ?? new Date().toISOString()\n      }\n    }\n  : {\n      type: \"manual\",\n      manual: {\n        trigger: \"n8n-manual-execution\",\n        user: \"system\",\n        timestamp: new Date().toISOString()\n      }\n    };\n\n// ---- Output document (MongoDB-ready) ----\n\nreturn [\n  {\n    json: {\n      // ---- Validation diagnostics ----\n      root_cause: input.root_cause ?? null,\n      missing_or_invalid_fields: input.missing_or_invalid_fields ?? [],\n      why_it_failed: input.why_it_failed ?? null,\n      proposed_fix: input.proposed_fix ?? null,\n      business_implication: input.business_implication ?? null,\n\n      // ---- Pipeline metadata ----\n      workflow_run_id: input.workflow_run_id ?? $execution.id,\n      received_at: input.received_at ?? new Date().toISOString(),\n      validator_version: input.validator_version ?? \"unknown\",\n      source_system: input.source_system ?? \"unknown\",\n      pipeline_version: input.pipeline_version ?? \"unknown\",\n      log_level: input.log_level ?? \"ERROR\",\n\n      // ---- ETL + Transport metadata ----\n      etl_metadata: input.etl_metadata ?? {},\n      transport_metadata\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        352
+      ],
+      "id": "90c34846-e616-418a-9cdb-fe794ea0e783",
+      "name": "FALSE Branch (Validation Failed)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ------------------------------------------------------------\n// ONE Code node (FIXED)\n// Purpose:\n// - Build STRICT validator_payload (contract-safe)\n// - Read fields from input.payload (from Unwrap node), fallback to root\n// - Preserve kafka_metadata untouched\n// - Never leak transport metadata into validator\n// ------------------------------------------------------------\n\nconst input = $json;\n\n// Source of business fields:\n// Prefer input.payload (current Unwrap output), fallback to input (legacy/alternate)\nconst src = (input && typeof input === 'object' && input.payload && typeof input.payload === 'object')\n  ? input.payload\n  : input;\n\n// -----------------------------\n// Extract expected shipment fields\n// -----------------------------\nconst shipment_id  = src.shipment_id  ?? null;\nconst weight_kg    = src.weight_kg    ?? null;\nconst destination  = src.destination  ?? null;\nconst priority     = src.priority     ?? null;\n\n// -----------------------------\n// Preserve Kafka metadata (pass-through)\n// -----------------------------\nconst kafka_metadata =\n  input.kafka_metadata ??\n  input._kafka_metadata ??\n  null;\n\n// -----------------------------\n// Optional: carry parse status for debugging (does not affect validator contract)\n// -----------------------------\nconst is_parse_error = input.is_parse_error ?? false;\n\n// -----------------------------\n// Build validator payload (strict boundary)\n// -----------------------------\nconst validator_payload = {\n  shipment_id,\n  weight_kg,\n  destination,\n  priority,\n\n  // Raw payload included ONLY for diagnostics\n  raw_payload: {\n    shipment_id,\n    weight_kg,\n    destination,\n    priority\n  }\n};\n\n// -----------------------------\n// Final output\n// -----------------------------\nreturn [\n  {\n    json: {\n      validator_payload,\n      kafka_metadata,\n      is_parse_error\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -592,
+        64
+      ],
+      "id": "011acf4a-0603-4aa0-bc32-cd77c41de738",
+      "name": "ONE Code node"
+    },
+    {
+      "parameters": {
+        "content": "Production pipeline. Contract frozen at SIGMA-AETL v1.0.\nDo not modify without version bump.",
+        "height": 80,
+        "width": 448
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        -128
+      ],
+      "id": "662affa1-762d-4fc6-9cc0-1d20a98b3011",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "POST → SIGMA-AETL Validator": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "TRUE Branch (Validation Passed)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FALSE Branch (Validation Failed)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRUE Branch (Validation Passed)": {
+      "main": [
+        [
+          {
+            "node": "Transform Clean Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform Clean Data": {
+      "main": [
+        [
+          {
+            "node": "Insert documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "SIGMA-AETL Sentinel",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SIGMA-AETL Sentinel": {
+      "main": [
+        [
+          {
+            "node": "Attach ETLMetadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalized JSON document": {
+      "main": [
+        [
+          {
+            "node": "Insert documents1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kafka Trigger": {
+      "main": [
+        [
+          {
+            "node": "Unwrap Kafka Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unwrap Kafka Message": {
+      "main": [
+        [
+          {
+            "node": "ONE Code node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach ETLMetadata": {
+      "main": [
+        [
+          {
+            "node": "Normalized JSON document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FALSE Branch (Validation Failed)": {
+      "main": [
+        [
+          {
+            "node": "SIGMA-AETL Sentinel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ONE Code node": {
+      "main": [
+        [
+          {
+            "node": "POST → SIGMA-AETL Validator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "db5092e7-b083-440d-980a-3bfef6aa81e1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4a03911ab52f358279d04c5824297c8f0cce825581da6002681e6e1ce8e836cc"
+  },
+  "id": "KPyp44xAgXBnZngQ",
+  "tags": []
+}
