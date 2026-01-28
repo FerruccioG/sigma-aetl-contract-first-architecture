@@ -20,3 +20,5 @@ The agent:
 - Can be disabled without affecting correctness
 
 This preserves deterministic, contract-first guarantees.
+
+Models are intentionally not committed. This repository documents integration patterns, not model binaries
