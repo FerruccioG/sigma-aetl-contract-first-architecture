@@ -6,6 +6,11 @@
  * These indexes are REQUIRED for correctness.
  */
 
+// Note: validated_shipments and failed_shipments use separate
+// indexing strategies by design to preserve isolation between
+// valid and invalid execution paths.
+
+
 if (db.getName() !== "sigma_aetl") {
   throw new Error("This script must be run against the sigma_aetl database");
 }
