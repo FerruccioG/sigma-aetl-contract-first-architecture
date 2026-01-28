@@ -4,4 +4,7 @@ v1.0.0 — “Contract-first validator workflow frozen; TRUE/FALSE routing verif
 ## v1.0.0-contract-frozen
 - Initial contract-first architecture release
 - Contract and workflow frozen
+- Explicit validation and routing
+- Idempotent persistence
+- AI-assisted diagnostics (optional)
 
