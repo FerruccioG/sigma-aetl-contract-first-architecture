@@ -1,0 +1,62 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+
+  sigma-aetl-validator:
+    image: sigma-aetl-validator:local
+    container_name: sigma-aetl-validator
+    ports:
+      - "8000:8000"
+    networks:
+      - default
+
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - EXECUTIONS_MODE=queue
+      - QUEUE_BULL_REDIS_HOST=redis
+      - QUEUE_BULL_REDIS_PORT=6379
+      - N8N_SECURE_COOKIE=false
+
+      # CRITICAL: allow triggers to run
+      - N8N_DISABLE_PRODUCTION_MAIN_PROCESS=false
+
+      - GENERIC_TIMEZONE=Europe/Dublin
+      - TZ=Europe/Dublin
+      - N8N_LOG_LEVEL=info
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - redis
+
+  n8n-worker:
+    image: n8nio/n8n:latest
+    command: ["worker"]   # ✅ FIXED
+    restart: unless-stopped
+    environment:
+      - EXECUTIONS_MODE=queue
+      - QUEUE_BULL_REDIS_HOST=redis
+      - QUEUE_BULL_REDIS_PORT=6379
+      - GENERIC_TIMEZONE=Europe/Dublin
+      - TZ=Europe/Dublin
+      - N8N_LOG_LEVEL=info
+      - N8N_SECURE_COOKIE=false
+
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - redis
+      - n8n
+
+volumes:
+  n8n_data:
+  redis_data:
