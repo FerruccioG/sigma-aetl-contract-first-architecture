@@ -1,1 +1,0 @@
-{"shipment_id": "SHIP-TRUE-003","weight_kg": 15.2,"destination": "Dublin","priority": 2}
