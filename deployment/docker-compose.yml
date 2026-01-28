@@ -1,3 +1,6 @@
+# Reference-only local deployment for SIGMA-AETL
+# Demonstrates service topology, not production infrastructure
+
 version: "3.8"
 
 services:
