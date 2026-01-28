@@ -6,6 +6,10 @@
  * These indexes are REQUIRED for correctness.
  */
 
+if (db.getName() !== "sigma_aetl") {
+  throw new Error("This script must be run against the sigma_aetl database");
+}
+
 use sigma_aetl;
 
 /**
