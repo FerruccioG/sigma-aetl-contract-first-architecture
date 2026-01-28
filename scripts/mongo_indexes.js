@@ -1,3 +1,11 @@
+/**
+ * SIGMA-AETL v1.0
+ * MongoDB index definitions enforcing idempotency, replay safety,
+ * and production-grade query performance.
+ *
+ * These indexes are REQUIRED for correctness.
+ */
+
 use sigma_aetl;
 
 /**
