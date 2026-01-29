@@ -1,15 +1,17 @@
-📚 Documentation & Architecture Notes
+📘 SIGMA-AETL Architecture Documentation
 
-Comprehensive documentation and explanatory material for the SIGMA-AETL contract-first architecture 🧱📜.
+This folder contains structured documentation explaining the contract-first, event-driven architecture behind SIGMA-AETL 🧱🚀
 
-This section covers:
+You’ll find:
 
-🧠 Architectural intent and design philosophy
+🔐 Why validation happens at the ingestion boundary
 
-🔍 Contract-first ingestion principles
+🔄 How data flows from Kafka → Validator → TRUE/FALSE paths → MongoDB
 
-🔄 Data flow and failure-handling rationale
+❌ Why failures are first-class citizens (not logs)
 
-🧩 Component interactions and boundaries
+♻️ How idempotency and safe replays are guaranteed
 
-Designed to help readers understand not just how the system works, but why — with clarity, traceability, and production realism in mind 🚀
+🧠 Where AI-assisted diagnostics fit — and where they don’t
+
+The goal is architectural clarity: helping readers understand the tradeoffs, constraints, and guarantees that make the system production-safe under real-world conditions ⚙️📈
