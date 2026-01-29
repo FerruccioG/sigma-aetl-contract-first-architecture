@@ -1,0 +1,49 @@
+{
+  "info": {
+    "name": "SIGMA-AETL Validator",
+    "description": "Contract-first validation tests for SIGMA-AETL",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Validate – PASS",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/validate",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "validate"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"shipment_id\": \"ABC123\", \"weight_kg\": 12.5, \"destination\": \"Dublin\", \"priority\": 2 }"
+        }
+      }
+    },
+    {
+      "name": "Validate – FAIL",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "http://localhost:8000/api/validate",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api", "validate"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"shipment_id\": \"\", \"weight_kg\": -5, \"destination\": \"Dublin\" }"
+        }
+      }
+    }
+  ]
+}
