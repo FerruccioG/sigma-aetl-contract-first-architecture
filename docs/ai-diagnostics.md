@@ -96,4 +96,21 @@ This keeps the project:
 
 ✅ License-clean
 
+
+sequenceDiagram
+    participant Kafka as Kafka Event Trigger
+    participant n8n as n8n Orchestrator
+    participant Validator as SIGMA-AETL Validator (FastAPI + Pydantic)
+    participant MongoFail as MongoDB (failed_shipments)
+    participant AI as AI Diagnostics (Ollama)
+
+    Kafka->>n8n: Event received
+    n8n->>Validator: POST /api/validate
+    Validator-->>n8n: FAILED + structured errors
+    n8n->>MongoFail: Persist normalized failure record
+    n8n->>AI: Submit failure context (optional)
+    AI-->>n8n: Advisory diagnostics (non-blocking)
+
+
+
 ✅ Security-aware
