@@ -85,4 +85,21 @@ You can use these payloads to:
 
 SIGMA-AETL is designed to **make failure visible, explainable, and safe**.
 
+---
+
+## 🔁 Kafka CLI Examples (Transport-Level Testing)
+
+These examples demonstrate **event ingestion via Kafka**, reinforcing that Kafka is **transport only**, not validation or truth.
+
+> Kafka does not validate schemas.  
+> Kafka does not enforce contracts.  
+> Kafka only delivers bytes.
+
+### ▶️ Produce a VALID payload
+
+```bash
+cat valid_payload.json | kafka-console-producer \
+  --broker-list localhost:9092 \
+  --topic sigma-aetl.shipments
+```
 Happy testing 🚀
