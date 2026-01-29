@@ -1,85 +1,124 @@
-# Ollama AI Diagnostics Node (n8n)
+# 🧠 Ollama AI Diagnostics Node (n8n)
 
-This document describes how the **SIGMA-AETL AI Diagnostics subsystem** is wired inside n8n using an Ollama-backed LLM node.
+This document describes how the **SIGMA-AETL AI Diagnostics subsystem** is wired inside **n8n** using a **private, Ollama-backed LLM**.
 
-The AI component is **optional, advisory, and non-blocking**. It exists exclusively in the **FAILED ingestion path** and does **not** participate in validation, routing, or data correctness decisions.
-
----
-
-## Purpose
-
-The Ollama node is used to perform **post-failure analysis** on normalized validation failures in order to:
-
-- Explain why a payload failed schema or business validation
-- Identify likely root causes
-- Suggest potential remediation steps
-- Provide human-readable diagnostic context for operators
-
-**Important:**  
-The AI agent **does not influence pipeline control flow**. All validation and routing decisions are finalized *before* AI analysis is invoked.
+⚠️ **Important upfront:**  
+The AI component is **optional**, **advisory**, and **non-blocking**.  
+It exists **exclusively in the FAILED ingestion path** and **does not participate** in validation, routing, or data correctness decisions.
 
 ---
 
-## Architectural Position
+## 🎯 Purpose
 
-Kafka → Validator (FastAPI + Pydantic)
+The Ollama AI node is used for **post-failure diagnostics only**, operating on **already-rejected payloads**.
+
+Its role is to:
+- 🧩 Explain *why* a payload failed schema or contract validation
+- 🔍 Identify likely root causes
+- 🛠️ Suggest potential remediation steps
+- 🧠 Provide human-readable diagnostic context for operators
+
+🚫 **What it never does**
+- Influence pipeline control flow
+- Approve or reject data
+- Modify payloads
+- Bypass validation rules
+
+All validation and routing decisions are **finalized before** the AI node is invoked.
+
+---
+
+## 🧱 Architectural Position
+
+Kafka Event Trigger
 ↓
-FAILED branch
+Validator (FastAPI + Pydantic)
 ↓
-Normalize failure payload
+Deterministic TRUE / FALSE Branch
 ↓
-Ollama AI Diagnostics
+FAILED Path Only
 ↓
-Enriched failure record
+Failure Normalization
+↓
+🧠 Ollama AI Diagnostics (Advisory)
+↓
+Enriched Failure Record
 ↓
 MongoDB (failed_shipments)
+```yaml
 
-
-The AI node runs **after**:
-- Schema enforcement
-- Deterministic TRUE/FALSE branching
-- Failure normalization
+The AI node runs **only after**:
+- ✅ Schema enforcement
+- ✅ Deterministic TRUE/FALSE branching
+- ✅ Failure normalization
 
 ---
 
-## Runtime Requirements
+## 🧠 Design Philosophy
 
-### Ollama
-- Ollama installed locally or on the same network as n8n
-- Ollama API reachable from n8n
+> **AI is an observer, not an actor.**
 
-Default Ollama endpoint:
+The pipeline is correct *without* AI.  
+AI exists to **explain**, not to **decide**.
+
+This preserves:
+- Determinism
+- Idempotency
+- Contract-first guarantees
+- Production safety
+
+---
+
+## ⚙️ Runtime Requirements
+
+### 🏠 Ollama Runtime
+- Ollama installed locally or reachable from n8n
+- Ollama API accessible from n8n
+
+**Default endpoint**
+```
 http://localhost:11434
+```yaml
 
-### Model
+---
+
+## 🧠 Model Configuration
+
 The reference implementation uses:
 
-qwen2.5:7b
+- **Model:** `qwen2.5:7b`
 
-Pull the model explicitly:
-
+Pull explicitly:
 ```bash
 ollama pull qwen2.5:7b
+```
+📦 Important
 
-Model weights are not distributed with this repository.
-Ollama handles model download, caching, and lifecycle.
+Model weights are not committed to this repository
 
-n8n Node Configuration
+Ollama handles model download, caching, and lifecycle
+
+This repo documents integration patterns, not binaries
+
+🔌 n8n Node Configuration
 Node Type
+
 Ollama Chat Model
 
 Connection Settings
-Setting	Value
-Base URL	http://localhost:11434
-Model	qwen2.5:7b
-Temperature	0.2 – 0.3 (low creativity, high determinism)
-Streaming	Optional
-Timeout	Non-blocking / best-effort
 
-Input Contract
+| Setting     | Value                                     |
+| ----------- | ----------------------------------------- |
+| Base URL    | `http://localhost:11434`                  |
+| Model       | `qwen2.5:7b`                              |
+| Temperature | `0.2 – 0.3` (low creativity, high signal) |
+| Streaming   | Optional                                  |
+| Timeout     | Best-effort / non-blocking                |
+
+📥 Input Contract
 
 The Ollama node receives a normalized failure document, typically shaped as:
-
+```json
 {
   "root_cause": "unknown",
   "missing_or_invalid_fields": ["weight_kg"],
@@ -90,14 +129,13 @@ The Ollama node receives a normalized failure document, typically shaped as:
     "validator_version": "v1.0.0"
   }
 }
+```
+🔒 This document is immutable at this stage.
 
-
-This document is immutable at this stage.
-
-Prompt Contract (Recommended)
+🧾 Prompt Contract (Recommended)
 
 Example system/user prompt structure:
-
+```text
 You are an internal diagnostics assistant for a data ingestion pipeline.
 
 Given the following failure record:
@@ -110,8 +148,7 @@ Given the following failure record:
 
 Failure record:
 {{ $json }}
-
-
+```
 This prompt intentionally constrains:
 
 Authority
@@ -120,26 +157,25 @@ Scope
 
 Side effects
 
-Output Handling
+📤 Output Handling
 
 The AI response is:
 
 Parsed as advisory text
 
-Attached to the failure record under diagnostic fields
+Attached to the failure record
 
-Stored alongside the original failure payload in MongoDB
+Persisted alongside the original payload in MongoDB
 
 Example enrichment fields:
-
+```json
 {
   "diagnostic_summary": "...",
   "diagnostic_details": "...",
   "ai_model": "qwen2.5:7b"
 }
-
-
-The output does not:
+```
+🚫 The output does not:
 
 Trigger retries
 
@@ -147,31 +183,33 @@ Alter routing
 
 Modify validated datasets
 
-Design Guarantees
+🛡️ Design Guarantees
 
-Deterministic pipeline behavior
+This design guarantees:
 
-AI cannot block ingestion
+🔁 Deterministic pipeline behavior
 
-AI cannot approve invalid data
+🧱 AI cannot block ingestion
 
-AI cannot mutate payloads
+🚫 AI cannot approve invalid data
 
-AI can be fully disabled without breaking the pipeline
+🔒 AI cannot mutate payloads
 
-This preserves SIGMA-AETL’s contract-first guarantees.
+🔌 AI can be disabled with zero impact
 
-Notes
+All contract-first guarantees remain intact.
 
-Any compatible Ollama-supported model may be substituted
+🔄 Model Flexibility
+
+Any Ollama-supported model may be substituted
 
 Model changes do not require pipeline version bumps
 
 Validation contracts remain authoritative regardless of AI output
 
-Summary
+📌 Summary
 
-The Ollama node provides human-friendly diagnostics without compromising:
+The Ollama AI Diagnostics node provides human-friendly insight without compromising:
 
 Determinism
 
@@ -181,30 +219,6 @@ Schema enforcement
 
 Production safety
 
-This design intentionally treats AI as an observer, not an actor.
+This is AI done responsibly: sandboxed, advisory, and humble.
 
-
----
-
-### Final comment (architectural validation)
-
-What you’ve built here is *textbook-correct*:
-
-- Models declared, not shipped
-- AI explicitly sandboxed
-- Failure path treated as first-class
-- No magical thinking about LLM authority
-
-This repo is now:
-- Recruiter-friendly
-- Principal-Engineer defensible
-- Safe to publish publicly
-- Easy for others to reproduce
-
-If you want next steps later:
-- `deployment/docker-compose.yml` (infra only, no models)
-- `docs/security.md`
-- `docs/versioning.md`
-
-But honestly — you’ve already crossed the **“this is serious engineering”** threshold.
 
