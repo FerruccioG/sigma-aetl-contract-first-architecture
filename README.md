@@ -1,193 +1,207 @@
 # sigma-aetl-contract-first-architecture
 
-![Status](https://img.shields.io/badge/status-reference%20architecture-blue)
-![Version](https://img.shields.io/badge/version-v1.0.0-brightgreen)
-![Architecture](https://img.shields.io/badge/architecture-contract--first-critical)
+# SIGMA-AETL — Contract-First Architecture (v1.0)
+
+![Status](https://img.shields.io/badge/status-contract--frozen_v1.0-blue)
+![Architecture](https://img.shields.io/badge/architecture-contract--first-success)
+![Kafka](https://img.shields.io/badge/kafka-event--driven-black)
+![Validation](https://img.shields.io/badge/validation-pydantic%20%2B%20fastapi-brightgreen)
 ![Orchestration](https://img.shields.io/badge/orchestration-n8n-orange)
-![Validation](https://img.shields.io/badge/validation-Pydantic%20%2B%20FastAPI-informational)
-![Transport](https://img.shields.io/badge/transport-Kafka-black)
-![Persistence](https://img.shields.io/badge/persistence-MongoDB-green)
-![AI](https://img.shields.io/badge/AI-private%20via%20Ollama-purple)
+![Database](https://img.shields.io/badge/database-mongodb-green)
+![Idempotency](https://img.shields.io/badge/idempotency-enforced-important)
+![AI](https://img.shields.io/badge/private%20AI-ollama-purple)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
----
+# SIGMA-AETL — Contract-First Architecture (v1.0)
 
-## Contract-first, Kafka-driven n8n ETL workflow  
-**with explicit Pydantic validation, deterministic failure routing, idempotent persistence, and a private AI diagnostics agent via Ollama, persisting into MongoDB.**
+**SIGMA-AETL v1.0** is a reference implementation of a **contract-first, Kafka event-driven ingestion architecture** with explicit validation boundaries, deterministic idempotency, production-grade failure isolation, and optional **private AI-assisted diagnostics via Ollama**.
 
----
-
-## Overview
-
-**SIGMA-AETL v1.0** is a **contract-first, event-driven ingestion architecture** designed to harden the ingestion boundary against upstream instability while preserving **replayability, auditability, and operational confidence**.
-
-Rather than relying on downstream transformations to “fix” data, this system:
-
-- enforces **explicit data contracts at ingestion time**
-- routes failures **deterministically**
-- guarantees **idempotent persistence** under retries and replays
-
-This repository is published as a **reference architecture and educational demo** showcasing **production-grade ingestion design patterns**.
+This repository demonstrates how to design ingestion systems that are **correct by construction**, resilient to upstream instability, and safe to operate in production.
 
 ---
 
-## Core Design Goals
+## 🔒 Contract Status
 
-- Enforce schema correctness **at ingestion time**, not downstream  
-- Treat invalid data as **first-class**, not as logs or side effects  
-- Guarantee **idempotent, replay-safe persistence**  
-- Isolate failures explicitly without contaminating valid datasets  
-- Make AI **advisory, private, and non-blocking**  
-- Freeze contracts to prevent accidental schema drift  
+> ⚠️ **SIGMA-AETL v1.0 is contract-frozen**
+>
+> All schemas, validation behavior, and orchestration logic are immutable.
+> Any change requires a **new versioned pipeline** (v2, v3, …).
+> In-place edits are explicitly forbidden.
 
 ---
 
-## Architecture Summary
+## 🧠 Architectural Overview
 
-SIGMA-AETL is architected as a **contract-first ingestion system**, not a transformation-centric ETL pipeline.
+SIGMA-AETL is intentionally designed as a **contract-first ingestion system**, not a transformation-centric ETL pipeline.
+
+Key principles:
+
+- **Validation at ingestion**, not downstream
+- **Explicit TRUE / FALSE routing**
+- **Failures are first-class data**
+- **Idempotency enforced at the application boundary**
+- **AI is advisory only — never authoritative**
 
 ### High-Level Flow
+```bash
+Kafka (event-driven trigger)
+↓
+FastAPI + Pydantic Validator
+↓
+┌───────────────┐
+│ TRUE (PASSED) │ ──▶ validated_shipments (MongoDB)
+└───────────────┘
+↓
+┌───────────────┐
+│ FALSE (FAILED)│ ──▶ failed_shipments (MongoDB)
+└───────────────┘
+↓
+(Optional) Private AI Diagnostics via Ollama
+```
 
-- **Kafka** acts as a durable, decoupled transport layer  
-- Payloads are validated by an external **FastAPI + Pydantic validator**  
-- The validator returns a deterministic **PASSED / FAILED** contract response  
-- **n8n** orchestrates execution with explicit **TRUE / FALSE branches**  
-- Valid data is persisted into a canonical dataset  
-- Invalid data is normalized, enriched, and persisted into a failure dataset  
-- Failures may optionally be analyzed by a **private AI diagnostics agent via Ollama**
-
-Kafka provides **delivery guarantees** — it is **not trusted for correctness**.
-
----
-
-## Contract-First Validation
-
-All semantic validation is delegated to a **stateless validator service** implemented with **FastAPI and Pydantic**.
-
-**Key principles:**
-
-- The validator is the **single source of truth**
-- Validation is **side-effect free**
-- Schemas are **explicit and immutable per version**
-- Output is deterministic:
-  - `PASSED` → canonicalized clean data
-  - `FAILED` → structured validation errors
-
-There is **no post-validation mutation or heuristic correction by design**.
+Kafka is used **strictly as a transport and decoupling layer** — it is never trusted for correctness.
 
 ---
 
-## Explicit Failure Routing
+## 🧩 Core Components
 
-Execution branches **explicitly** based on validation outcome.
+### Kafka (Event-Driven Trigger)
+- Durable transport layer
+- Decouples producers from ingestion
+- Provides ordering and replay capability
+- **No validation logic**
 
-### TRUE Path (Validation Passed)
+### Validator Service
+- Built with **FastAPI + Pydantic**
+- Enforces immutable schema contracts
+- Returns deterministic **PASSED / FAILED** responses
+- Canonicalizes valid payloads
+- Rejects invalid payloads with structured errors
 
-- Operates only on **schema-validated payloads**
-- Writes canonical data to `validated_shipments`
-- Enforces uniqueness via MongoDB indexes
-- Safe under retries and replays
+### Orchestration (n8n)
+- Consumes Kafka events
+- Calls the validator
+- Enforces strict TRUE / FALSE branching
+- Routes records into isolated pipelines
+- Workflow is frozen at v1.0
 
-### FALSE Path (Validation Failed)
+### MongoDB
+- Persists validated and failed records separately
+- Unique indexes enforce idempotency
+- Partial indexes optimize failure queries
+- Enables safe reprocessing and auditability
 
-Failures are treated as a **first-class pipeline**.
-
-Invalid payloads are:
-
-- normalized into a failure schema  
-- enriched with ETL, transport, and execution metadata  
-- persisted as **immutable failure records**
-
-No silent drops.  
-No logs-only failures.
-
-Failures are **observable, queryable, and replayable**.
-
----
-
-## Idempotency & Replay Safety
-
-Idempotency is enforced **at the application layer**, not inferred.
-
-- Each execution generates a **machine-generated identifier**
-- Identifiers are persisted with **MongoDB unique indexes**
-- Guarantees **exactly-once semantics at the storage boundary**
-
-Safe under:
-
-- Kafka **at-least-once delivery**
-- orchestrator retries
-- manual replays
-
-Validated and failed datasets are **independently indexed** for forensic analysis.
+### AI Diagnostics (Optional)
+- Powered by **private, local models via Ollama**
+- Used **only in the FAILED path**
+- Advisory, non-blocking, and sandboxed
+- AI output is **never trusted for control flow, correctness, or persistence decisions**
 
 ---
 
-## AI-Assisted Diagnostics (Optional)
+## 🔁 Idempotency & Safety Guarantees
 
-The failure pipeline optionally integrates a **private AI diagnostics subsystem**.
-
-- Powered by **internal language models served via Ollama**
-- Operates on normalized failure records
-- Produces:
-  - probable root causes
-  - remediation suggestions
-  - business impact hints
-
-AI is **advisory only** — non-blocking and side-effect free.
-
-AI enhances **observability**, not correctness guarantees.
+- Machine-generated identifiers enforce exactly-once behavior
+- MongoDB unique indexes guarantee deduplication
+- Kafka retries and replays are safe by design
+- Failed payloads are immutable and auditable
+- No partial acceptance or heuristic repair
 
 ---
 
-## Versioning & Immutability
+## 🤖 Private AI Diagnostics (Optional)
 
-The pipeline is **frozen at v1.0**.
+SIGMA-AETL integrates an **optional AI diagnostics subsystem** using internal models served by **Ollama**.
 
-- Contracts are immutable
-- Schema changes require an **explicit version bump**
-- Parallel contract versions can coexist safely
+- Model example: `qwen2.5:7b`
+- Runtime: local, private, offline-capable
+- Role: diagnostics only
+- Authority: **none**
 
-This mirrors **production-grade API versioning discipline** and prevents silent breaking changes.
+AI diagnostics may:
+- Explain validation failures
+- Identify probable root causes
+- Suggest remediation steps
 
----
+AI diagnostics **cannot**:
+- Approve invalid data
+- Modify payloads
+- Influence routing decisions
+- Block ingestion
 
-## Technology Stack
-
-- **Kafka** — event transport & decoupling  
-- **FastAPI + Pydantic** — contract enforcement  
-- **n8n** — orchestration & deterministic routing  
-- **MongoDB** — idempotent persistence & indexing  
-- **Ollama** — private AI diagnostics agent  
-
----
-
-## What This Repository Is (and Is Not)
-
-**This is:**
-
-- A reference implementation of a **production-grade ingestion architecture**
-- A teaching artifact demonstrating **contract-first ETL design**
-- A reproducible demo showing **explicit failure isolation**
-
-**This is not:**
-
-- A turnkey production deployment  
-- A generic ETL template  
-- An AI-driven decision system  
+AI acts as an **observer, not an actor**.
 
 ---
 
-## License
+## 📁 Repository Structure (High-Level)
 
-MIT License — published for **knowledge sharing, reproducibility, and architectural clarity**.
+docs/ → architecture notes, setup, diagnostics, troubleshooting
+schemas/ → frozen Pydantic contracts (v1.0)
+orchestration/ → n8n workflows (contract-frozen)
+validator/ → FastAPI + Pydantic validator service
+scripts/ → MongoDB indexes and example payloads
+deployment/ → local Docker-based experimentation only
 
-The goal is **not code hoarding**, but demonstrating how complex ingestion problems can be made **deterministic, observable, and safe**.
 
 ---
 
-## Author
+## 🚀 Getting Started
+
+This repository is designed to be reproducible on a **Windows 11 + Docker + WSL2** environment.
+
+👉 Start here:
+- `docs/setup.md` — system requirements & installation sequence
+- `docs/quickstart.md` — minimal smoke tests
+- `orchestration/n8n/` — frozen workflow import
+- `schemas/v1/` — immutable contracts
+
+---
+
+## ❌ What This Architecture Intentionally Avoids
+
+- Kubernetes
+- Spark
+- Airflow
+- Cloud lock-in
+- External AI APIs
+- Implicit schema evolution
+
+This is a **self-contained, reproducible reference architecture**.
+
+---
+
+## 📌 Design Intent
+
+SIGMA-AETL is optimized for environments where:
+
+- Upstream schemas change unexpectedly
+- Replays and retries are unavoidable
+- Data correctness matters more than throughput
+- Failures must be explainable, not hidden
+- Contracts must be enforced, not implied
+
+---
+
+## 👤 Author
 
 Designed and implemented by **Ferruccio Guicciardi**
 
-*Contract-first ingestion • Data engineering • Private AI systems*
+*Contract-first ingestion • Deterministic pipelines • Data engineering • Private AI systems*
+
+---
+
+## 📜 License
+
+MIT License — published for **knowledge sharing, reproducibility, and architectural clarity**.
+
+This repository is a **reference implementation and educational architecture demo**.  
+It is not intended to be deployed as-is without review.
+
+---
+
+## 🏷️ Release
+
+**v1.0.0-contract-frozen**
+
+This release represents a fully validated, production-grade contract-first ingestion architecture.
+
