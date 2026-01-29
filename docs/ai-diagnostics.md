@@ -96,7 +96,10 @@ This keeps the project:
 
 ✅ License-clean
 
+✅ Security-aware
 
+
+📈 FALSE Path — Diagnostic Flow (Mermaid Sequence Diagram)
 sequenceDiagram
     participant Kafka as Kafka Event Trigger
     participant n8n as n8n Orchestrator
@@ -111,6 +114,76 @@ sequenceDiagram
     n8n->>AI: Submit failure context (optional)
     AI-->>n8n: Advisory diagnostics (non-blocking)
 
+🧠 Key Properties
 
+❌ Validation always happens before AI
 
-✅ Security-aware
+🧱 Failure records are persisted first
+
+🔌 AI enrichment is optional and asynchronous
+
+🔁 Replays produce identical validation outcomes
+
+🚫 Why AI Is Explicitly Excluded from the TRUE Path
+
+AI is deliberately forbidden from participating in the TRUE (validated) ingestion path.
+
+❗ Design Reasons
+
+🧮 Determinism:
+AI introduces probabilistic behavior — unacceptable for data correctness.
+
+🔁 Replay Safety:
+Re-running historical data must produce identical results.
+
+📜 Auditability:
+Schema validation produces explainable, reproducible outcomes.
+
+🔒 Trust Boundary:
+AI is not a source of truth.
+
+🧱 Architectural Rule
+
+If data passes validation, AI has nothing to say.
+
+The TRUE path operates on:
+
+✅ Canonicalized payloads
+
+✅ Versioned schema contracts
+
+✅ Deterministic logic only
+
+No heuristics. No guesses. No exceptions.
+
+🧪 Sample AI Diagnostic Output (Non-Authoritative)
+
+⚠️ Important:
+The following output is illustrative only.
+AI diagnostics do not influence pipeline execution.
+
+```json
+{
+  "diagnostic_summary": "Payload failed schema validation due to negative numeric value and missing required field.",
+  "probable_root_cause": "Upstream producer emitting partial payload during retry sequence.",
+  "field_analysis": {
+    "weight_kg": "Value must be greater than zero as per contract.",
+    "priority": "Required field missing."
+  },
+  "recommended_actions": [
+    "Validate payload construction before Kafka publish.",
+    "Ensure retry logic does not drop required fields."
+  ],
+  "confidence_level": "medium"
+}
+```
+
+🧠 Interpretation Rules
+
+📝 Advisory only
+
+🚫 Cannot override validator
+
+🚫 Cannot mutate stored records
+
+📎 Stored as metadata, not truth
