@@ -102,4 +102,145 @@ cat valid_payload.json | kafka-console-producer \
   --broker-list localhost:9092 \
   --topic sigma-aetl.shipments
 ```
-Happy testing 🚀
+Expected behavior:
+
+Message consumed by n8n
+
+Validator returns PASSED
+
+Workflow follows TRUE branch
+
+Data inserted into validated_shipments
+
+▶️ Produce an INVALID payload
+```bash
+cat invalid_payload.json | kafka-console-producer \
+  --broker-list localhost:9092 \
+  --topic sigma-aetl.shipments
+```
+🔴 Expected behavior:
+
+Message consumed by n8n
+
+Validator returns FAILED
+
+Workflow follows FALSE branch
+
+Data inserted into failed_shipments
+
+Optional AI diagnostics may execute (advisory only)
+
+🌐 Validator API Tests (Direct Contract Enforcement)
+
+These tests bypass Kafka entirely and validate contract enforcement in isolation.
+
+✅ Validate a GOOD payload
+```bash
+curl -X POST http://localhost:8000/api/validate \
+  -H "Content-Type: application/json" \
+  --data @valid_payload.json
+```
+🟢 Expected response:
+```json
+{
+  "status": "PASSED"
+}
+```
+❌ Validate a BAD payload
+```bash
+curl -X POST http://localhost:8000/api/validate \
+  -H "Content-Type: application/json" \
+  --data @invalid_payload.json
+```
+🔴 Expected response:
+```json
+{
+  "status": "FAILED",
+  "reason": "Schema validation failed",
+  "errors": [...],
+  "received_payload": {...}
+}
+```
+⚠️ Note:
+
+HTTP status is 200 by design
+
+Contract result is semantic, not transport-level
+
+📊 MongoDB Verification (Persistence & Idempotency)
+
+These queries verify exactly-once behavior and failure isolation.
+
+🔍 Check validated records
+```bash
+use sigma_aetl
+db.validated_shipments.find().sort({ received_at: -1 }).limit(5)
+```
+Expected:
+
+Only schema-compliant payloads
+
+Unique machine_generated_id
+
+No duplicates on replays
+
+🔍 Check failed records
+```bash
+db.failed_shipments.find().sort({ received_at: -1 }).limit(5)
+```
+Expected:
+
+Full failure context
+
+Original payload preserved
+
+Validation errors stored
+
+Optional AI diagnostics attached
+
+🧱 Verify Idempotency (Critical)
+
+Re-send the same payload multiple times.
+```bash
+# Reproduce the same message
+cat valid_payload.json | kafka-console-producer \
+  --broker-list localhost:9092 \
+  --topic sigma-aetl.shipments
+```
+Then check:
+```bash
+db.validated_shipments.countDocuments({
+  machine_generated_id: "<same-id>"
+})
+```
+✅ Result must always be:
+```text
+1
+```
+If not → idempotency is broken.
+🧠 Key Takeaways
+
+Kafka = transport, not truth 🚚
+
+Validation = deterministic and explicit 📜
+
+TRUE and FALSE paths are equally important 🔀
+
+Failures are data, not logs ❌📄
+
+Replays are safe 🔁
+
+Nothing is hidden 🧱
+
+🧭 Mental Model
+
+“If it fails here, it would fail in production —
+and that is exactly what makes the system trustworthy.”
+
+SIGMA-AETL is designed to fail loudly, persist failures, and remain correct under pressure.
+
+
+
+
+
+
