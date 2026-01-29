@@ -1,5 +1,5 @@
-Why failures are first-class
+## 🧱 Failure as a First-Class Concept
 
-Why FALSE ≠ logs
-
-Why failure data is persisted and indexed
+- ❓ Why failures are first-class  
+- 🚫 Why FALSE ≠ logs  
+- 🗄️ Why failure data is persisted and indexed
