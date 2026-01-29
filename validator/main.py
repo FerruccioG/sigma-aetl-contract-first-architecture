@@ -1,31 +1,29 @@
-```python
-"""
-SIGMA-AETL Validator — Contract v1.0 (FROZEN)
+#  =========================
+#  SIGMA-AETL Validator — Contract v1.0 (FROZEN)
+#
+#  This service enforces the authoritative ingestion contract for the
+#  SIGMA-AETL pipeline.
+# 
+#  CONTRACT STATUS
+# - Version: v1.0
+# - Status: FROZEN
+# - This contract MUST NOT be modified in place.
+#
+#  GUARANTEES
+# - Deterministic schema validation (Pydantic)
+# - Explicit PASS / FAIL response contract
+# - No side effects
+# - No data mutation
+# - No heuristic repair
 
-This service enforces the authoritative ingestion contract for the
-SIGMA-AETL pipeline.
-
-🔒 CONTRACT STATUS
-- Version: v1.0
-- Status: FROZEN
-- This contract MUST NOT be modified in place.
-
-📜 GUARANTEES
-- Deterministic schema validation (Pydantic)
-- Explicit PASS / FAIL response contract
-- No side effects
-- No data mutation
-- No heuristic repair
-
-🚫 CHANGE POLICY
-Any change to validation rules, schema shape, or semantics requires:
-- A new versioned contract (v2, v3, …)
-- A new validator service instance
-- Explicit orchestration changes
-
-This file is the single source of truth for ingestion correctness.
-"""
-```
+#  CHANGE POLICY
+# Any change to validation rules, schema shape, or semantics requires:
+# - A new versioned contract (v2, v3, …)
+# - A new validator service instance
+# - Explicit orchestration changes
+#
+# This file is the single source of truth for ingestion correctness.
+# =========================
 
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
