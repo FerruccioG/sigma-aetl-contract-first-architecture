@@ -1,5 +1,5 @@
-Why validation happens at ingestion
+## 🚪 Ingestion Boundary Design
 
-Why Kafka is transport, not truth
-
-Why FastAPI + Pydantic is the enforcement layer
+- 🚪 Why validation happens at ingestion  
+- 🚚 Why Kafka is transport, not truth  
+- 🛡️ Why FastAPI + Pydantic are the enforcement layer
