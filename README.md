@@ -12,8 +12,6 @@
 ![AI](https://img.shields.io/badge/private%20AI-ollama-purple)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-# SIGMA-AETL — Contract-First Architecture (v1.0)
-
 **SIGMA-AETL v1.0** is a reference implementation of a **contract-first, Kafka event-driven ingestion architecture** with explicit validation boundaries, deterministic idempotency, production-grade failure isolation, and optional **private AI-assisted diagnostics via Ollama**.
 
 This repository demonstrates how to design ingestion systems that are **correct by construction**, resilient to upstream instability, and safe to operate in production.
@@ -204,4 +202,5 @@ It is not intended to be deployed as-is without review.
 **v1.0.0-contract-frozen**
 
 This release represents a fully validated, production-grade contract-first ingestion architecture.
+
 
