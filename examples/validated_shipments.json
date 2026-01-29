@@ -1,0 +1,14 @@
+{
+  "_id": ObjectId("..."),
+  "machine_generated_id": "310-1769594700946-pibnarxb",
+  "shipment_id": "ABC123",
+  "weight_kg": 12.5,
+  "destination": "Dublin",
+  "priority": 2,
+  "received_at": ISODate("2026-01-28T10:14:32Z"),
+  "etl_metadata": {
+    "workflow_run_id": "n8n-run-84923",
+    "validator_version": "v1.0",
+    "source": "kafka"
+  }
+}
