@@ -1,0 +1,25 @@
+{
+  "_id": ObjectId("..."),
+  "received_at": ISODate("2026-01-28T10:16:11Z"),
+  "workflow_run_id": "n8n-run-84924",
+  "kafka_metadata": {
+    "topic": "sigma-aetl.shipments",
+    "partition": 0,
+    "offset": 12345
+  },
+  "received_payload": {
+    "shipment_id": "",
+    "weight_kg": -5,
+    "destination": "Dublin"
+  },
+  "validation_errors": [
+    "shipment_id must not be empty",
+    "weight_kg must be > 0",
+    "priority is required"
+  ],
+  "ai_diagnostics": {
+    "diagnostic_summary": "Payload failed schema validation",
+    "probable_root_cause": "Upstream retry emitted partial payload",
+    "confidence_level": "medium"
+  }
+}
