@@ -1,68 +1,94 @@
-# n8n Orchestration Layer — SIGMA-AETL v1.0
-# n8n workflow definitions and orchestration logic for the SIGMA-AETL pipeline.
+# 🧭 n8n Orchestration Layer — SIGMA-AETL v1.0
 
-This directory contains the **n8n workflow definitions** that orchestrate the SIGMA-AETL v1.0 pipeline.
+**n8n workflow definitions and orchestration logic for the SIGMA-AETL contract-first pipeline.**
 
-The orchestration layer is intentionally lightweight and deterministic. It is **not responsible for business logic, schema enforcement, or data correctness**. Its sole role is to coordinate execution based on explicit validation outcomes.
+This directory contains the **n8n orchestration layer** responsible for coordinating execution flow in **SIGMA-AETL v1.0**.
 
----
+⚠️ **Important:**  
+The orchestration layer is intentionally **lightweight, deterministic, and non-authoritative**.  
+It does **not** perform validation, business logic, or data correction.
 
-## Design Principles
-
-- **Contract-first execution**
-  - All payload validation is delegated to an external validator service.
-  - n8n does not infer correctness or attempt to repair data.
-
-- **Explicit TRUE / FALSE branching**
-  - Workflow execution is deterministically split based on validator response:
-    - `TRUE` → validated, schema-compliant data
-    - `FALSE` → rejected, invalid data
-  - No heuristic or conditional mutation is allowed post-validation.
-
-- **Failure-first architecture**
-  - Invalid payloads are treated as first-class records.
-  - Failures are normalized, enriched with metadata, and persisted independently.
-
-- **Idempotent by design**
-  - Orchestration is safe under retries and replays.
-  - Uniqueness and exactly-once semantics are enforced downstream via MongoDB indexes.
+Its sole responsibility is to **route execution based on explicit validation outcomes**.
 
 ---
 
-## Included Workflows
+## 🎯 Design Principles
 
-### `sigma-aetl-v1.json`
+### 📜 Contract-First Execution
+- All payload validation is delegated to an **external validator service**.
+- Validation is enforced **before** any orchestration decision.
+- n8n **never infers correctness** and **never attempts to repair data**.
 
-Production-frozen n8n workflow implementing:
+---
 
-- Kafka-triggered ingestion
+### 🔀 Explicit TRUE / FALSE Branching
+- Workflow execution is deterministically split based on validator response:
+  - ✅ **TRUE path** → validated, schema-compliant payloads
+  - ❌ **FALSE path** → rejected, invalid payloads
+- No heuristics, no soft conditions, no post-validation mutation.
+
+---
+
+### 🚨 Failure-First Architecture
+- Invalid payloads are treated as **first-class data**, not logs.
+- Failures are:
+  - Normalized
+  - Enriched with ETL and execution metadata
+  - Persisted independently for audit, replay, and diagnostics
+
+---
+
+### ♻️ Idempotent by Design
+- Orchestration is **safe under retries and replays**.
+- Exactly-once semantics are enforced **downstream** using:
+  - Machine-generated identifiers
+  - MongoDB unique indexes
+- n8n itself remains stateless and deterministic.
+
+---
+
+## 📦 Included Workflows
+
+### 📄 `sigma-aetl-v1.json`
+
+🚀 **Production-frozen n8n workflow implementing:**
+
+- Kafka event-driven ingestion trigger
 - Payload unwrapping and normalization
-- External contract validation via HTTP
-- Explicit TRUE / FALSE execution paths
+- External contract validation via HTTP (FastAPI + Pydantic)
+- Deterministic TRUE / FALSE execution paths
 - Clean data persistence for validated payloads
-- Failure normalization, metadata enrichment, and persistence
-- Optional AI-assisted diagnostics on the failure path
+- Failure normalization and metadata enrichment
+- Optional AI-assisted diagnostics on the FALSE path (via Ollama)
 
-This workflow is **version-frozen at v1.0**.  
-Any behavioral or contract change requires a new workflow version.
-
----
-
-## What This Layer Does *Not* Do
-
-- No schema inference
-- No data correction or coercion
-- No hidden retries with side effects
-- No downstream “fix-up” logic
-
-All correctness guarantees are enforced **before** orchestration decisions are made.
+🔒 This workflow is **version-frozen at v1.0**.  
+Any behavioral, structural, or contract change requires an **explicit version bump**.
 
 ---
 
-## Operational Notes
+## 🚫 What This Layer Does *Not* Do
 
-- Kafka provides transport and decoupling only.
-- Validator response is the single source of truth.
-- n8n branching logic must remain deterministic and side-effect-free.
+- ❌ No schema inference  
+- ❌ No data correction or coercion  
+- ❌ No hidden retries with side effects  
+- ❌ No downstream “fix-up” logic  
 
-This orchestration layer is designed to be **observable, replay-safe, and boring** — exactly what you want in production.
+All correctness guarantees are enforced **before orchestration begins**.
+
+---
+
+## ⚙️ Operational Notes
+
+- 📦 **Kafka** provides transport and decoupling only — not truth
+- ✅ **Validator response** is the single source of truth
+- 🧠 **n8n branching logic must remain deterministic and side-effect-free**
+
+This orchestration layer is designed to be:
+
+✨ **Observable**  
+♻️ **Replay-safe**  
+😌 **Boring by design** — exactly what you want in production
+
+---
+
+> _“If orchestration is exciting, something is wrong.”_
