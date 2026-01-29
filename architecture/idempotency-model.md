@@ -1,5 +1,5 @@
-Machine-generated IDs
+## 🎯 Idempotency & Exactly-Once Semantics
 
-MongoDB unique indexes
-
-Exactly-once at the application boundary
+- 🆔 Machine-generated IDs  
+- 🗄️ MongoDB unique indexes  
+- ♻️ Exactly-once at the application boundary
