@@ -1,1 +1,29 @@
-{"shipment_id": "","weight_kg": -5,"destination": "Dublin"}
+```json
+{
+  "shipment_id": "",
+  "weight_kg": -5,
+  "destination": "Dublin"
+}
+```
+
+Why this is a good invalid example (for your own sanity later)
+
+This payload fails multiple contract rules at once, which is ideal for demonstrations:
+
+❌ shipment_id is an empty string (violates min length)
+
+❌ weight_kg is negative (violates numeric constraint)
+
+❌ priority is missing (required field)
+
+This guarantees:
+
+Validator returns FAILED
+
+Workflow takes the FALSE branch
+
+Record is persisted into failed_shipments
+
+Optional AI diagnostics can activate
+
+📌 Do not “fix” this payload — it is intentionally broken and should stay that way.
