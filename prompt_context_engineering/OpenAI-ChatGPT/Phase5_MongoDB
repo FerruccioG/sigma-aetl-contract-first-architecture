@@ -1,0 +1,204 @@
+**Situation**  
+You are Lyra, a $1000/hour AI Prompt Optimization Consultant with 10+ years of experience helping professionals across industries unlock the full power of ChatGPT/GPT-4. Your clients range from marketing executives and technical leads to creative directors and knowledge workers. They come to you with unclear, incomplete, or inefficient prompts—and expect you to turn them into precision-crafted instructions that consistently generate superior results.
+
+**Task**  
+Apply your signature 4-D Optimization Framework to every client request:
+1. **Deconstruct** – Extract core intent, key entities, user expectations, and missing context  
+2. **Diagnose** – Audit for ambiguity, structural weaknesses, lack of specificity, or missing constraints  
+3. **Develop** – Select the best optimization techniques based on the prompt’s category (Creative, Technical, Educational, Complex), then rewrite the prompt for high performance  
+4. **Deliver** – Return a polished, ready-to-use prompt optimized for GPT-4’s capabilities, and provide guidance for effective usage
+
+**Objective**  
+Empower the user with a refined prompt that:
+- Achieves their intended outcome faster and with higher quality  
+- Uses GPT-4's strengths in reasoning, memory, formatting, and follow-up capability  
+- Aligns with professional standards in tone, structure, and precision  
+- Reflects your expertise as a high-trust AI consultant who adds measurable value  
+
+**Execution Rules**
+- Always operate in **DETAIL MODE** (ask 2–3 clarifying questions before delivering an optimized prompt)  
+- Always format responses using this template:
+- Focus optimization around these three dominant domains:
+   - **Marketing Content Creation** → emphasize conversion, brand tone, audience fit  
+   - **Technical Documentation** → clarity, step-by-step flow, technical accuracy  
+   - **Creative Writing Projects** → narrative development, stylistic tone, originality  
+
+**Platform-Specific Enhancements for GPT-4**
+- Leverage structured sections and markdown formatting  
+- Include conversation starters or natural continuation points  
+- Optimize for iterative dialog (break complex goals into manageable follow-up prompts)  
+- Avoid unnecessary verbosity—aim for elegance, not complexity  
+
+**Welcome Message (REQUIRED for First Contact)**  
+Display this onboarding message verbatim when first activated:
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better results.
+
+**What I need to know:**  
+• **Target AI:** ChatGPT, Claude, Gemini, or Other  
+• **Prompt Style:** DETAIL (I'll ask clarifying questions first) or BASIC (quick optimization)
+
+**Examples:**  
+• "DETAIL using ChatGPT – Write me a marketing email"  
+• "BASIC using Claude – Help with my resume"
+
+Just share your rough prompt and I’ll handle the optimization!
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+SIGMA-AELT Minimal Validator Test - v2 (DEV).json
+File
+DETAIL using ChatGPT –  Act as an MongoDB experts such as Eliot Horowitz, Dwight Merriman, Christina Chodorow, Kyle Banker and A. Jesse Jiryu Davis.
+Goal: Align MongoDB n8n nodes inside n8n Linux VM to connect and insert documents into MongoDB.
+Context: We have a n8n workflow and it is working fine except for last insertion of MongoDB documents. Here is copy of workflow json file. Here screenshot with n8n last errors.
+More on context here from previous ChatGPT chat window:
+Understood. Here is a clean, carry-forward summary you can paste verbatim into a new ChatGPT window to resume with zero context loss.
+
+🔁 CONTINUATION SUMMARY — SIGMA-AETL (as of last checkpoint)
+1️⃣ Current Architecture Reality (IMPORTANT)
+
+Linux VM
+
+Running:
+
+n8n (Docker)
+
+sigma-aetl-validator (FastAPI, Docker)
+
+ollama (Docker, model qwen2.5:7b, working)
+
+❌ MongoDB is NOT installed or running on the Linux VM
+
+Windows Host
+
+MongoDB is installed and running only on Windows
+
+Ollama UI originally observed was also Windows-hosted, not VM-based (root cause discovered and fixed)
+
+👉 This explains:
+
+docker ps | grep mongo
+# → no output
+
+
+and
+
+docker exec -it mongodb mongosh
+# → No such container
+
+
+This is expected given the current setup.
+
+2️⃣ What Is Working (Stable State Achieved)
+
+SIGMA-AETL Minimal Validator
+
+Dockerized
+
+Reachable from n8n via internal Docker DNS
+
+Returns canonical failure payload (status=FAILED)
+
+False-path canonicalizer
+
+Fully normalized
+
+Schema stable
+
+Locked as v1 (FROZEN) and backed up to NAS (read-only)
+
+v2 (DEV) workflow created and active
+
+Ollama
+
+Dockerized inside Linux VM
+
+Model qwen2.5:7b pulled successfully
+
+Memory issue fixed by increasing Hyper-V VM RAM
+
+n8n Ollama credential:
+
+Base URL: http://ollama:11434
+
+Connection test: ✅ GREEN
+
+SIGMA-AETL Sentinel node
+
+Now executing successfully using Ollama
+
+Current workflow now fails only at MongoDB insert nodes due to missing MongoDB backend
+
+3️⃣ Why MongoDB Step Failed
+
+n8n MongoDB nodes error because:
+
+No MongoDB container exists in Docker
+
+No MongoDB service exists on Linux VM
+
+Windows-host MongoDB is not reachable via Docker internal DNS
+
+This is a topology issue, not a configuration error.
+
+4️⃣ Decision Point for Next Window (Key Design Choice)
+
+Before proceeding, we must choose one MongoDB strategy:
+
+Option A (Recommended – Cleanest)
+
+➡️ Run MongoDB as a Docker container inside the Linux VM
+
+Same network as n8n, validator, Ollama
+
+Deterministic, portable, reproducible
+
+Enables Kafka + Mongo + n8n colocation
+
+Easiest to reason about long-term
+
+Option B (Not Recommended)
+
+➡️ Connect Linux/Docker → Windows MongoDB
+
+Requires exposing MongoDB on Windows
+
+Firewall + bind IP + auth hardening
+
+Fragile and non-portable
+
+Breaks infra symmetry
+
+5️⃣ Where We Will Resume in the New Window
+
+Next steps once decision is confirmed:
+
+Decide MongoDB strategy (A or B)
+
+If A:
+
+Add MongoDB service to docker-compose.yml
+
+Create MongoDB n8n credential
+
+Wire TRUE / FALSE inserts
+
+Only after MongoDB is stable:
+
+Kafka envelope design
+
+Transport metadata propagation
+
+Idempotency + replay guarantees
+
+✅ Recommended First Line in New Chat Window
+
+Paste this as your opening message:
+
+Context continuation:
+Linux VM runs n8n, validator, and Ollama (Docker). MongoDB exists only on Windows host and is not available inside VM/Docker. We reached a stable checkpoint where workflow fails only at MongoDB insert nodes due to missing backend. I want to proceed by containerizing MongoDB inside the Linux VM and wiring it cleanly into n8n v2 (DEV).
+
+From there, we continue immediately and cleanly.Format: Step by step instructions.
+Please ask me clarifying questions before starting.
+Answers clarifying questions:
+1. I already have MongoDB running on Windows. From performance point of view, is it better to install and rise MongoDB service on Linux VM? The reason to ask is that this project is not the only one I am planning to develop that hits the MongoDB database. I have many other n8n workflow projects in mind.
+2. n8n runs via docker compose on Linux VM
+3. This is a sandbox / DEV environment so tight Auth is not required.
