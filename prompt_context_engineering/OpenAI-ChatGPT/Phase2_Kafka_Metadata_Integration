@@ -1,0 +1,369 @@
+**Situation**  
+You are Lyra, a $1000/hour AI Prompt Optimization Consultant with 10+ years of experience helping professionals across industries unlock the full power of ChatGPT/GPT-4. Your clients range from marketing executives and technical leads to creative directors and knowledge workers. They come to you with unclear, incomplete, or inefficient prompts—and expect you to turn them into precision-crafted instructions that consistently generate superior results.
+
+**Task**  
+Apply your signature 4-D Optimization Framework to every client request:
+1. **Deconstruct** – Extract core intent, key entities, user expectations, and missing context  
+2. **Diagnose** – Audit for ambiguity, structural weaknesses, lack of specificity, or missing constraints  
+3. **Develop** – Select the best optimization techniques based on the prompt’s category (Creative, Technical, Educational, Complex), then rewrite the prompt for high performance  
+4. **Deliver** – Return a polished, ready-to-use prompt optimized for GPT-4’s capabilities, and provide guidance for effective usage
+
+**Objective**  
+Empower the user with a refined prompt that:
+- Achieves their intended outcome faster and with higher quality  
+- Uses GPT-4's strengths in reasoning, memory, formatting, and follow-up capability  
+- Aligns with professional standards in tone, structure, and precision  
+- Reflects your expertise as a high-trust AI consultant who adds measurable value  
+
+**Execution Rules**
+- Always operate in **DETAIL MODE** (ask 2–3 clarifying questions before delivering an optimized prompt)  
+- Always format responses using this template:
+- Focus optimization around these three dominant domains:
+   - **Marketing Content Creation** → emphasize conversion, brand tone, audience fit  
+   - **Technical Documentation** → clarity, step-by-step flow, technical accuracy  
+   - **Creative Writing Projects** → narrative development, stylistic tone, originality  
+
+**Platform-Specific Enhancements for GPT-4**
+- Leverage structured sections and markdown formatting  
+- Include conversation starters or natural continuation points  
+- Optimize for iterative dialog (break complex goals into manageable follow-up prompts)  
+- Avoid unnecessary verbosity—aim for elegance, not complexity  
+
+**Welcome Message (REQUIRED for First Contact)**  
+Display this onboarding message verbatim when first activated:
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better results.
+
+**What I need to know:**  
+• **Target AI:** ChatGPT, Claude, Gemini, or Other  
+• **Prompt Style:** DETAIL (I'll ask clarifying questions first) or BASIC (quick optimization)
+
+**Examples:**  
+• "DETAIL using ChatGPT – Write me a marketing email"  
+• "BASIC using Claude – Help with my resume"
+
+Just share your rough prompt and I’ll handle the optimization!
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+DETAIL using ChatGPT – Act as Jay Kreps — THE #1 Kafka expert on earth,  Co-creator of Kafka, CEO & Co-Founder of Confluent and Neha Narkhede — Co-creator of Kafka and Jun Rao — Kafka Co-creator & Confluent Co-founder and Gwen Shapira — Principal Data Architect, ex-Confluent and Viktor Gamov — Kafka developer advocate (world-famous) and Robin Moffatt — Kafka, Streaming & ksqlDB Expert Kai Waehner — One of the world’s top event streaming architects, so thru you acting on ChatGPT they become my Kafka mentors and support during the effort of activating Kafka on my Docker and integrate Kafka metadata into my ETL metadata.
+Action: Activate Kafka on my Docker and integrate Kafka metadata into my ETL metadata.
+Context: After developing a great SIGMA-AETL n8n + MongoDB + Pydantic workflow with many good enterprise level features we decided to enrich the pipeline with extra ETL metadata fields and that why we conceived the idea of add Kafka meta fields  on the ETL metadata. Then, I have decide to rise it even further by adding Kafka service to my Docker to workflow real Kafka data to my ETL. My background of Microsoft Message Queue experience will be added to the Kafka experience on my PC , so I can also go thru this Kafka learning curve by enhancing this n8n / MongoDB / Pydantic / AI Agent (local Ollama Chat Model) with Kalka metadata. 
+Here is more items on Context as I am carrying them from previous ChatGPT window on this project:
+before we Continue with Kafka metadata, I have another Kafka question: Is it possible to mount a Kafka dev environment on my PC? for my education?
+ChatGPT said:
+
+Absolutely YES — and it’s much easier than most people think.
+You can 100% run a full Kafka development environment on your personal Windows 11 PC, and it’s perfect for education, prototyping SIGMA-AETL, and understanding event-driven ETL.
+
+Below is a clear breakdown of the three best ways to run Kafka locally + what I recommend for your setup.
+
+✅ Option 1 — Run Kafka via Docker (the BEST, cleanest, fastest way)
+
+This is the modern approach used by professionals.
+
+What you need:
+
+Docker Desktop (Windows 11 supports it perfectly)
+
+One docker-compose.yml file
+
+Minimal docker-compose.yml for Kafka + Zookeeper:
+version: '3.8'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_BROKER_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+Launch Kafka:
+docker-compose up -d
+
+You’re done.
+
+Kafka is running on your PC. You can now:
+
+Produce events
+
+Consume events
+
+Create topics
+
+Test ETL pipelines
+
+This option is clean, isolated, and production-like.
+
+✅ Option 2 — Use Redpanda (Kafka-compatible, NO ZooKeeper, extremely simple)
+
+This is the best choice for personal education because Redpanda is:
+
+Kafka API compatible
+
+Faster
+
+Lightweight
+
+Single binary
+
+Install Redpanda:
+curl -1sLf \
+  'https://repositories.redpanda.com/tools/windows/install.ps1' | powershell
+
+Start a one-node Kafka-compatible cluster:
+rpk redpanda start --overprovisioned --smp 1 --memory 1G --reserve-memory 0M
+
+Done. No ZooKeeper.
+
+Redpanda includes a built-in UI to see messages, topics, partitions, offsets.
+
+Redpanda is now used by Netflix, CrowdStrike, Figma, etc.
+For learning Kafka, this is the easiest environment in the world.
+
+✅ Option 3 — Download Kafka binaries and run manually (not recommended)
+
+This is the classic Apache approach:
+
+Download 400 MB of Java
+
+Start ZooKeeper
+
+Start Kafka server
+
+Manage config files manually
+
+It works, but it’s slow, outdated, and painful compared to Docker or Redpanda.
+
+🟩 Recommended Path for YOU
+
+Given your environment:
+
+Windows 11
+
+Docker already used for n8n and Mongo
+
+High technical skills
+
+Desire to understand event-driven ETL
+
+👉 The Docker Kafka environment is PERFECT for SIGMA-AETL learning.
+
+But…
+
+👉 The Redpanda environment gets you running Kafka in 30 seconds with no complexity.
+
+If you want to simulate:
+
+multi-topic ETL pipelines
+
+real-time validators
+
+replay events
+
+failure-routing
+
+metadata enrichment
+
+Then Redpanda gives you instant Kafka behavior without the heavy setup.
+
+🟦 Bonus: Kafka Tools You Should Install for Education
+📌 1. Kafka UI
+
+A web-based GUI for topics, messages, offsets
+GitHub: provectus/kafka-ui
+
+📌 2. Kafdrop
+
+Lightweight message viewer
+GitHub: obsidiandynamics/kafdrop
+
+📌 3. rpk (Redpanda CLI)
+
+Super friendly alternative to Kafka’s complex CLI.
+
+🟩 Yes — You can integrate local Kafka with n8n
+
+n8n supports:
+
+Kafka Producer Node
+
+Kafka Trigger Node
+
+Meaning:
+
+Your SIGMA-AETL pipeline can become event-driven instantly.
+
+🟦 If you want, I can now create for you:
+✔ A ready-to-copy Docker Compose file
+✔ A Redpanda single-line installer for Windows
+✔ A Kafka/n8n pipeline that mirrors your MongoDB ETL
+✔ A SIGMA-AETL Kafka-compatible metadata schema
+✔ A step-by-step lesson plan to learn Kafka in 48 hours
+
+Just tell me:
+
+👉 “Set up my Kafka training environment.”
+
+You said:
+Ok, lets do Option 1 — Run Kafka via Docker (the BEST, cleanest, fastest way) first.
+But before that, I have notice this ChatGPT window have become very slow , so we need to drift it to a new ChatGPT  chat window. Please summarize the most important items to carry on to new ChatGPT window.
+ChatGPT said:
+
+Here is the exact migration summary you need to safely continue the Kafka setup in a new ChatGPT window without losing critical project context.
+
+I am keeping it short, sharp, essential, so the new ChatGPT thread loads instantly and continues with full intelligence.
+
+✅ SIGMA-AETL Validator – Migration Summary for New ChatGPT Window
+1. Current System Architecture (Working)
+
+FastAPI ETL Validator running via Docker at:
+http://localhost:8000/validate/
+
+n8n Workflow executing end-to-end with:
+
+Data ingestion
+
+API validation
+
+SIGMA-AETL Sentinel™ (AI diagnostics node via Ollama)
+
+Metadata enrichment
+
+MongoDB insertion
+
+MongoDB running locally with correct document insertion.
+
+Everything is stable.
+
+✅ 2. SIGMA-AETL Sentinel™ (Local AI Diagnostics Agent)
+
+Uses n8n Ollama Chat Model node
+
+Calls qwen2.5:7b locally
+
+Convert results into JSON diagnostic object
+
+No API cost per call (free, unlimited, local)
+
+Purpose:
+
+Detect anomalies, explain failures, add AI reasoning metadata into ETL pipeline.
+
+✅ 3. ETL Metadata Fields (Current Draft)
+
+Inside "Attach ETL Metadata" node:
+
+workflow_run_id
+
+machine_generated_id
+
+validator_version
+
+sentinel_version
+
+etl_timestamp_utc
+
+diagnostic_summary
+
+diagnostic_details
+
+source_payload_raw
+
+is_valid
+
+All fields working except those dynamically coming from AI mapping (which are now fixed).
+
+✅ 4. Purpose of Kafka Integration
+
+We will add Kafka-style metadata fields to make SIGMA-AETL future-ready for:
+
+Event-driven ETL
+
+Replayability
+
+Observability
+
+Streaming pipelines
+
+Enterprise interoperability
+
+This does NOT mean Kafka is required right now — only that metadata follows Kafka conventions.
+
+Examples we will add:
+
+kafka_topic
+
+kafka_partition
+
+kafka_offset
+
+event_timestamp
+
+producer_app
+
+event_key
+
+event_type
+
+This future-proofs your ETL architecture.
+
+✅ 5. Kafka Installation – NEXT STEP
+
+We will perform Option 1 — Kafka via Docker:
+
+One docker-compose.yml
+
+Services:
+
+ZooKeeper
+
+Kafka Broker
+
+Kafka UI
+
+No local conflicts with your existing Docker services
+
+Ultra-clean environment
+
+Ready for n8n Kafka Producer/Consumer nodes
+
+🔥 6. What to Write in New ChatGPT Window (Copy/Paste this)
+I want to continue with Option 1 — Install Kafka via Docker for my SIGMA-AETL project.
+
+Here is the context I am carrying over:
+
+- I have a working n8n ETL pipeline, FastAPI validator, and MongoDB.
+- I use a local AI agent (SIGMA-AETL Sentinel™) based on Ollama qwen2.5:7b.
+- I want Kafka installed to: 
+  1) learn event-driven ETL,
+  2) add Kafka metadata,
+  3) integrate Kafka into future SIGMA-AETL pipeline versions.
+
+Please give me:
+1. The correct docker-compose.yml for Kafka + ZooKeeper + Kafka UI.
+2. Instructions for starting and verifying Kafka locally.
+3. Instructions to create my first Kafka topic.
+4. Instructions to publish and consume test messages.
+5. Instructions to integrate Kafka Producer inside n8n workflow.
+
+✅ You're Ready for the New Window
+
+Just paste the block above into a new chat.
+I will immediately continue the setup from that clean context — fast and smooth.
+
+When you're ready, say:
+
+👉 “I opened the new window and pasted the text.”
+Format: Step by Step instructions.
+Please ask me clarifying questions before continuing.
+im back from lunch. Im ready for : Phase 1 – Kafka via Docker Setup.
