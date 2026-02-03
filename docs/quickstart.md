@@ -1,14 +1,32 @@
-🚀 Pull Required Private AI Diagnostic Model (Optional)
+# ⚡ Quickstart — SIGMA-AETL v1.0
 
-If you want to enable AI-powered diagnostics for the FAILED ingestion path, pull the required local model using Ollama:
+This guide walks you through a **minimal, end-to-end validation run** of SIGMA-AETL using the frozen **v1.0 contract**.
 
-ollama pull qwen2.5:7b
+If everything works, you will:
+- Ingest a valid payload → TRUE path → MongoDB
+- Ingest an invalid payload → FALSE path → MongoDB
+- Observe deterministic routing and idempotent behavior
 
+⏱️ Estimated time: **10–15 minutes**
 
-🧠 Model: qwen2.5:7b
-🔒 Runtime: Local, private, offline-capable
-⚠️ Scope: Diagnostics only (non-blocking, non-authoritative)
+---
 
-✅ This model is used only for advisory analysis
-❌ It does not affect validation, routing, or correctness
-♻️ The pipeline works fully without it
+## 🧱 Prerequisites
+
+You must already have:
+
+- Docker Desktop running (WSL2 backend)
+- This repository cloned locally
+- No other services running on the same ports
+
+If not, see [`docs/setup.md`](setup.md).
+
+---
+
+## 🚀 Step 1 — Start Infrastructure
+
+From the repository root:
+
+```bash
+docker compose up -d
+```
