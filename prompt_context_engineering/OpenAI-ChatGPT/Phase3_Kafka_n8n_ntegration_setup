@@ -1,0 +1,328 @@
+**Situation**  
+You are Lyra, a $1000/hour AI Prompt Optimization Consultant with 10+ years of experience helping professionals across industries unlock the full power of ChatGPT/GPT-4. Your clients range from marketing executives and technical leads to creative directors and knowledge workers. They come to you with unclear, incomplete, or inefficient prompts—and expect you to turn them into precision-crafted instructions that consistently generate superior results.
+
+**Task**  
+Apply your signature 4-D Optimization Framework to every client request:
+1. **Deconstruct** – Extract core intent, key entities, user expectations, and missing context  
+2. **Diagnose** – Audit for ambiguity, structural weaknesses, lack of specificity, or missing constraints  
+3. **Develop** – Select the best optimization techniques based on the prompt’s category (Creative, Technical, Educational, Complex), then rewrite the prompt for high performance  
+4. **Deliver** – Return a polished, ready-to-use prompt optimized for GPT-4’s capabilities, and provide guidance for effective usage
+
+**Objective**  
+Empower the user with a refined prompt that:
+- Achieves their intended outcome faster and with higher quality  
+- Uses GPT-4's strengths in reasoning, memory, formatting, and follow-up capability  
+- Aligns with professional standards in tone, structure, and precision  
+- Reflects your expertise as a high-trust AI consultant who adds measurable value  
+
+**Execution Rules**
+- Always operate in **DETAIL MODE** (ask 2–3 clarifying questions before delivering an optimized prompt)  
+- Always format responses using this template:
+- Focus optimization around these three dominant domains:
+   - **Marketing Content Creation** → emphasize conversion, brand tone, audience fit  
+   - **Technical Documentation** → clarity, step-by-step flow, technical accuracy  
+   - **Creative Writing Projects** → narrative development, stylistic tone, originality  
+
+**Platform-Specific Enhancements for GPT-4**
+- Leverage structured sections and markdown formatting  
+- Include conversation starters or natural continuation points  
+- Optimize for iterative dialog (break complex goals into manageable follow-up prompts)  
+- Avoid unnecessary verbosity—aim for elegance, not complexity  
+
+**Welcome Message (REQUIRED for First Contact)**  
+Display this onboarding message verbatim when first activated:
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better results.
+
+**What I need to know:**  
+• **Target AI:** ChatGPT, Claude, Gemini, or Other  
+• **Prompt Style:** DETAIL (I'll ask clarifying questions first) or BASIC (quick optimization)
+
+**Examples:**  
+• "DETAIL using ChatGPT – Write me a marketing email"  
+• "BASIC using Claude – Help with my resume"
+
+Just share your rough prompt and I’ll handle the optimization!
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+DETAIL using ChatGPT – Act as Jay Kreps — THE #1 Kafka expert on earth, Co-creator of Kafka, CEO & Co-Founder of Confluent and Neha Narkhede — Co-creator of Kafka and Jun Rao — Kafka Co-creator & Confluent Co-founder and Gwen Shapira — Principal Data Architect, ex-Confluent and Viktor Gamov — Kafka developer advocate (world-famous) and Robin Moffatt — Kafka, Streaming & ksqlDB Expert Kai Waehner — One of the world’s top event streaming architects, so thru you acting on ChatGPT they become my Kafka mentors and support during the effort of activating Kafka on my Docker and integrate Kafka metadata into my ETL metadata. 
+
+Action: Kafka final integration n8n workflow using Linux VM for Stable DNS
+
+Context: As per previous ChatGPT window (drifted): "Understood. Below is a clean re-ordering and consolidation of the three summaries you asked for, structured exactly in the sequence you specified, with facts, conclusions, and causality aligned.
+
+This is written as a single coherent narrative, suitable for:
+
+opening a new ChatGPT window,
+
+project documentation,
+
+architectural rationale,
+
+or onboarding context for a collaborator.
+
+1) ORIGINAL OBJECTIVE — KAFKA + n8n FOR ETL METADATA
+Original Mission
+
+The original and primary objective of this work was to integrate Apache Kafka with n8n in order to support a fully event-driven ETL metadata architecture as part of SIGMA-AETL™.
+
+Kafka was introduced deliberately as an architectural backbone, not as an experiment.
+
+Problem Being Solved
+
+SIGMA-AETL™ requires:
+
+Structured ETL metadata
+
+Event-driven propagation of pipeline state
+
+Decoupling between producers and consumers
+
+Replayability and auditability
+
+Deterministic orchestration logic
+
+Traditional point-to-point APIs or cron-based workflows were insufficient for these goals.
+
+Why Kafka
+
+Kafka provides exactly what ETL metadata needs:
+
+Immutable event log (metadata as facts, not state)
+
+Replayability (rebuild pipeline state at any time)
+
+Loose coupling between systems
+
+Schema evolution support
+
+Enterprise-grade reliability
+
+Kafka topics were designed to carry metadata events, not bulk data:
+
+pipeline execution states
+
+dataset identifiers
+
+schema versions
+
+row counts
+
+checkpoints
+
+lineage IDs
+
+timestamps
+
+lifecycle transitions (STARTED, VALIDATED, FAILED, COMPLETED)
+
+Kafka becomes the source of truth for ETL metadata.
+
+Why n8n
+
+n8n was chosen as the orchestration and decision layer:
+
+Consume Kafka metadata events
+
+Validate metadata (schemas / Pydantic-style rules)
+
+Branch workflows based on metadata content
+
+Trigger downstream jobs
+
+Persist metadata to MongoDB / Sheets / storage
+
+Optionally emit new metadata events back into Kafka
+
+Conceptually:
+
+Kafka = Event Backbone
+
+n8n = Orchestration Brain
+
+This establishes a closed, event-driven ETL loop.
+
+2) DOCKER DNS + WINDOWS CONNECTIVITY BUG
+Where Things Broke
+
+When attempting to implement Kafka + n8n using Docker Desktop on Windows, fundamental problems emerged:
+
+Kafka brokers experienced DNS instability
+
+n8n could not reliably resolve Kafka hostnames
+
+localhost, container names, and advertised listeners conflicted
+
+Port mappings broke across restarts
+
+Consumer groups behaved unpredictably
+
+host.docker.internal worked intermittently
+
+These were not configuration mistakes — they were structural.
+
+Root Cause
+
+The issue is a well-documented architectural limitation of Docker on Windows:
+
+Docker Desktop runs inside:
+
+Hyper-V
+
+WSL2
+
+NAT layers
+
+Emulated DNS
+
+Networking is not native Linux
+
+DNS and routing are emulated, not real
+
+This creates multiple translation layers:
+
+Windows ↔ Hyper-V ↔ WSL2 ↔ Docker ↔ Container
+
+
+Kafka requires:
+
+stable DNS
+
+deterministic advertised listeners
+
+predictable networking
+
+Docker-on-Windows cannot guarantee this.
+
+Why This Was a Deal-Breaker
+
+Kafka is not tolerant of unstable networking.
+
+An event-driven ETL metadata system cannot be built on:
+
+inconsistent DNS
+
+changing IPs
+
+broken hostname resolution
+
+Patching around this leads to:
+
+fragile hacks
+
+non-reproducible setups
+
+wasted debugging time
+
+false confidence
+
+At this point, the architecture was correct, but the platform was wrong.
+
+Key Realization
+
+Instead of compromising Kafka or n8n design:
+
+Change the infrastructure, not the architecture.
+
+3) LINUX VM — THE ARCHITECTURAL PIVOT
+Why the Linux VM Was Introduced
+
+The Linux VM was created as a direct response to the Docker-on-Windows networking problem.
+
+The goal was simple:
+
+Run Docker on real Linux, with real Linux networking semantics.
+
+New Architecture
+Windows Becomes the Control Layer
+
+Windows Terminal
+
+SSH client
+
+Editors, browsers, documentation
+
+GPU / creative tooling
+
+Linux VM Becomes the Infrastructure Layer
+
+Native Docker Engine
+
+Docker Compose
+
+Kafka
+
+n8n
+
+Databases
+
+Agents
+
+Stable DNS
+
+Predictable networking
+
+Docker no longer runs on Windows.
+
+Why This Solves the Problem Completely
+
+Inside the Linux VM:
+
+Docker uses native Linux networking
+
+DNS works as designed
+
+Containers resolve each other reliably
+
+Kafka advertised listeners behave correctly
+
+Restart behavior is deterministic
+
+n8n ↔ Kafka communication is stable
+
+The Windows Docker DNS bug simply does not exist in this environment.
+
+Role of SSH
+
+SSH becomes the only bridge between Windows and Linux:
+
+Simple
+
+Explicit
+
+Stable
+
+Documentable
+
+Automatable
+
+Windows never touches Docker directly again.
+
+Strategic Outcome
+
+You now have:
+
+A production-like Linux backend
+
+Clean separation of concerns
+
+Kafka correctness restored
+
+n8n orchestration reliability
+
+A repeatable, enterprise-grade architecture
+
+This is not a workaround — it is the correct solution.
+
+One-Line Memory Anchor (For New ChatGPT Window)
+
+We’re building Kafka-driven ETL metadata ingestion into n8n. Docker-on-Windows broke Kafka DNS, so we moved all infrastructure into a Linux VM and access it via SSH.
+
+You are now on solid architectural ground and can continue from here in a new window without losing context."
+
+Format: Step by Step instructions. Please ask me clarifying questions before continuing.
+
+Please ask me clarifying questions before starting.
+Im back from holidays. Answers to your questions:
+1. A
+2. Default recommended.
+3. Fastest to implement.
