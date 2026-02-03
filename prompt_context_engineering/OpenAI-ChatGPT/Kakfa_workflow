@@ -1,0 +1,581 @@
+**Situation**  
+You are Lyra, a $1000/hour AI Prompt Optimization Consultant with 10+ years of experience helping professionals across industries unlock the full power of ChatGPT/GPT-4. Your clients range from marketing executives and technical leads to creative directors and knowledge workers. They come to you with unclear, incomplete, or inefficient prompts—and expect you to turn them into precision-crafted instructions that consistently generate superior results.
+
+**Task**  
+Apply your signature 4-D Optimization Framework to every client request:
+1. **Deconstruct** – Extract core intent, key entities, user expectations, and missing context  
+2. **Diagnose** – Audit for ambiguity, structural weaknesses, lack of specificity, or missing constraints  
+3. **Develop** – Select the best optimization techniques based on the prompt’s category (Creative, Technical, Educational, Complex), then rewrite the prompt for high performance  
+4. **Deliver** – Return a polished, ready-to-use prompt optimized for GPT-4’s capabilities, and provide guidance for effective usage
+
+**Objective**  
+Empower the user with a refined prompt that:
+- Achieves their intended outcome faster and with higher quality  
+- Uses GPT-4's strengths in reasoning, memory, formatting, and follow-up capability  
+- Aligns with professional standards in tone, structure, and precision  
+- Reflects your expertise as a high-trust AI consultant who adds measurable value  
+
+**Execution Rules**
+- Always operate in **DETAIL MODE** (ask 2–3 clarifying questions before delivering an optimized prompt)  
+- Always format responses using this template:
+- Focus optimization around these three dominant domains:
+   - **Marketing Content Creation** → emphasize conversion, brand tone, audience fit  
+   - **Technical Documentation** → clarity, step-by-step flow, technical accuracy  
+   - **Creative Writing Projects** → narrative development, stylistic tone, originality  
+
+**Platform-Specific Enhancements for GPT-4**
+- Leverage structured sections and markdown formatting  
+- Include conversation starters or natural continuation points  
+- Optimize for iterative dialog (break complex goals into manageable follow-up prompts)  
+- Avoid unnecessary verbosity—aim for elegance, not complexity  
+
+**Welcome Message (REQUIRED for First Contact)**  
+Display this onboarding message verbatim when first activated:
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better results.
+
+**What I need to know:**  
+• **Target AI:** ChatGPT, Claude, Gemini, or Other  
+• **Prompt Style:** DETAIL (I'll ask clarifying questions first) or BASIC (quick optimization)
+
+**Examples:**  
+• "DETAIL using ChatGPT – Write me a marketing email"  
+• "BASIC using Claude – Help with my resume"
+
+Just share your rough prompt and I’ll handle the optimization!
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+SIGMA-AELT Minimal Validator Test - v2 (DEV - Kafka Triggered) (8).json
+File
+DETAIL using ChatGPT – Act as Jay Kreps, Co-creator of Apache Kafka, Co-creator of Apache Kafka, Neha Narkhede – operational & product vision, Neha Narkhede – operational & product vision and as Jan Oberhauser, Founder and original architect of n8n, who designed the node execution engine, workflow runtime, and execution persistence model with deep understanding of: Trigger lifecycles (especially Kafka, Webhooks, Cron), Execution modes (manual vs active), Queue mode vs main mode,
+Credential scoping. Act as someone who knows Kafka Trigger internals, Active workflow lifecycle,,
+Offset commits, Group ID behavior and specially ACTIVE n8n consumer process.
+Goal: Complete production-style Kafka consumer workflow so they complete fails shipments data , originating from Kafka finally get stored in MongoDB.
+Context: ChatGPT failed several times to do so, so we handover to Claude.
+Here is original handover report to Claude and Claude response, including last version of failing workflow JSON:
+HANDOVER REPORT — SIGMA-AETL Kafka → n8n → MongoDB Pipeline
+1. Objective (What We Are Building)
+
+We are building a Kafka-triggered ETL validation pipeline using n8n that:
+
+Consumes messages from Kafka topic:
+
+sigma.failed_shipments
+
+
+Each Kafka message is a JSON payload representing a failed shipment event.
+
+The workflow:
+
+Unwraps the Kafka message
+
+Sends payload to a SIGMA-AETL Validator (HTTP)
+
+Routes:
+
+✅ Valid → clean transform → MongoDB
+
+❌ Invalid → AI Sentinel (LLM) → structured error document → MongoDB
+
+Failed shipments originating from Kafka must be stored in MongoDB with:
+
+"transport_metadata": {
+  "type": "kafka",
+  ...
+}
+
+
+This is a production-style Kafka consumer workflow, not a manual test workflow.
+
+2. Current Architecture (n8n Workflow)
+
+Workflow name
+
+SIGMA-AETL Minimal Validator Test – v2 (DEV – Kafka Triggered)
+
+
+Core nodes
+
+Kafka Trigger
+
+Unwrap Kafka Message (JS)
+
+POST → SIGMA-AETL Validator (HTTP)
+
+IF (status === PASSED)
+
+TRUE branch → Transform → MongoDB insert
+
+FALSE branch:
+
+SIGMA-AETL Sentinel (LLM)
+
+Parse Text
+
+Attach ETL Metadata
+
+Normalized JSON document
+
+MongoDB insert (failed_shipments)
+
+Important
+
+The workflow JSON is correct
+
+All data-shape bugs were fixed
+
+MongoDB inserts work when workflow is manually executed
+
+3. What Works (Confirmed with Evidence)
+✅ Kafka Infrastructure
+
+Kafka broker is healthy
+
+Topic exists: sigma.failed_shipments
+
+Messages are produced successfully
+
+Messages are consumed by CLI consumers
+
+Example produced message:
+
+{
+  "shipment_id": "KAFKA-REAL-001",
+  "schema_version": "1.0",
+  "status": "FAILED",
+  "error": "missing_destination"
+}
+
+✅ n8n Kafka Trigger Configuration
+
+Correct topic
+
+Correct group ID: n8n-sigma-aetl-validator
+
+Kafka Trigger receives messages when manually tested
+
+Kafka Trigger output shows:
+
+{
+  "message": "{...json string...}",
+  "topic": "sigma.failed_shipments"
+}
+
+✅ Unwrap Kafka Message Node
+
+Correctly parses JSON string into object
+
+Adds kafka_metadata correctly
+
+Output verified and correct
+
+✅ Downstream Logic
+
+Validator routing works
+
+AI Sentinel works
+
+Normalized JSON document works
+
+MongoDB insert works
+
+✅ MongoDB
+
+Collection: failed_shipments
+
+Documents insert correctly
+
+Historical manual records exist
+
+4. What Does NOT Work (The Blocking Issue)
+❌ Kafka Trigger Does NOT fire automatically
+
+Symptoms
+
+Sending Kafka messages produces NO new n8n execution
+
+MongoDB does NOT receive new Kafka-sourced documents
+
+transport_metadata.type = kafka never appears
+
+Kafka consumer group offsets do not move due to n8n
+
+❌ Workflow never shows “Active”
+
+Top-right of n8n UI only shows:
+
+Saved
+Publish
+
+
+There is NO Active / Inactive toggle visible.
+
+This means:
+
+Kafka Trigger is NOT running as a background consumer
+
+5. Critical Observation
+
+In n8n:
+
+Kafka Triggers ONLY run when a workflow is ACTIVE
+
+“Saved” or “Published” alone is not sufficient
+
+Without Active = ON, Kafka messages are ignored
+
+However:
+
+In this n8n instance, the Active toggle does not appear at all
+
+This is the core blocker.
+
+6. Tests Already Performed (To Avoid Re-testing)
+
+✔ Reset Kafka offsets
+✔ Verified consumer group
+✔ Produced new Kafka messages
+✔ Verified topic consumption via CLI
+✔ Unpinned Kafka Trigger
+✔ Restarted workflow executions
+✔ Verified payload formats
+✔ Verified Unwrap logic
+✔ Verified MongoDB writes on manual execution
+
+All of the above are confirmed working.
+
+This is not a data, schema, or Kafka issue.
+
+7. What We Need Help With (Explicit Ask to Claude)
+🎯 Primary Question
+
+Why does this n8n instance NOT show an Active toggle for Kafka Trigger workflows?
+
+🎯 Specific Areas We Need Claude’s Help On
+
+n8n deployment mode analysis
+
+Is this instance running in:
+
+editor-only mode?
+
+queue mode without workers?
+
+webhook-only mode?
+
+Kafka Trigger lifecycle
+
+What conditions must be met for Kafka Trigger to register a consumer?
+
+Is activation disabled at instance level?
+
+UI vs backend mismatch
+
+Is there a known issue where Active toggle is hidden?
+
+Does Kafka Trigger require:
+
+n8n Cloud?
+
+specific license?
+
+background workers?
+
+Config-level checks
+
+Environment variables that disable triggers
+
+EXECUTIONS_MODE
+
+QUEUE_* settings
+
+Docker flags
+
+How to force activation
+
+CLI activation
+
+API activation
+
+DB-level workflow activation
+
+Minimal reproducible test
+
+What is the absolute smallest Kafka Trigger workflow that should activate?
+
+How to verify consumer is running internally
+
+8. What We Are NOT Asking For
+
+No workflow redesign
+
+No schema changes
+
+No Kafka reconfiguration
+
+No MongoDB changes
+
+No payload changes
+
+This is purely an n8n trigger lifecycle / activation problem.
+
+9. Deliverables Requested from Claude
+
+Root cause explanation
+
+Exact reason Active toggle is missing
+
+Step-by-step fix
+
+How to verify Kafka Trigger is truly running
+
+Best-practice n8n Kafka deployment guidance
+
+10. Attachments
+
+Full workflow JSON (to be attached separately)
+
+Screenshots showing:
+
+No Active toggle
+
+Kafka Trigger output
+
+MongoDB verification
+
+Kafka CLI producer/consumer tests
+
+11. Final Status Summary
+Component	Status
+Kafka	✅ Working
+n8n workflow logic	✅ Correct
+MongoDB	✅ Working
+Kafka Trigger	❌ Not activated
+Root cause	🔴 n8n trigger lifecycle / instance configuration
+Closing Note to Claude
+
+This pipeline is functionally correct.
+The only missing piece is Kafka Trigger activation at the n8n instance level.
+Please focus on why activation is impossible in this environment and how to enable it.
+
+Reply from Claude:
+Looking at your handover report and workflow JSON, I can identify the root cause of why your Kafka Trigger isn't firing automatically:
+Root Cause: "active": false in Workflow JSON
+
+Format: Step by step instructions with code.
+Please ask me clarifying questions before starting.
+In your workflow JSON (document 2), line near the bottom shows:
+json"active": false,
+This is why:
+
+The workflow is explicitly set to active: false
+n8n Kafka Triggers ONLY consume messages when active: true
+The UI isn't showing an "Active" toggle because the workflow state is already determined
+
+Why You're Not Seeing the Active Toggle
+The missing Active toggle in the UI could be due to several reasons:
+
+Workflow not published to production mode - n8n differentiates between "draft" and "published" workflows
+Instance running in webhook-only mode - Some n8n deployments disable polling/trigger-based workflows
+Queue mode without workers - If running in queue mode but workers aren't configured for triggers
+UI permissions/role restrictions - Certain deployment configs hide activation controls
+
+Immediate Fix Steps
+Step 1: Activate via n8n API
+bash# Get your workflow ID (you have it: KPyp44xAgXBnZngQ)
+# Get your n8n instance URL and API key
+
+curl -X PATCH \
+  http://your-n8n-instance:5678/api/v1/workflows/KPyp44xAgXBnZngQ \
+  -H "X-N8N-API-KEY: your-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{"active": true}'
+Step 2: Activate via n8n CLI (if you have container access)
+bash# SSH/exec into n8n container
+docker exec -it <n8n-container> /bin/sh
+
+# Use n8n CLI
+n8n workflow:activate --id=KPyp44xAgXBnZngQ
+Step 3: Check Instance Configuration
+Verify your n8n deployment environment variables:
+bash# Check these critical settings:
+EXECUTIONS_MODE=regular  # NOT 'queue' unless workers configured
+N8N_DISABLE_PRODUCTION_MAIN_PROCESS=false
+QUEUE_BULL_REDIS_DB=0  # If using queue mode
+Verification Checklist
+After activating, verify the Kafka consumer is running:
+1. Check n8n Logs
+bashdocker logs -f <n8n-container-name>
+Look for: Kafka consumer started for workflow: KPyp44xAgXBnZngQ
+2. Check Kafka Consumer Group
+bashkafka-consumer-groups.sh \
+  --bootstrap-server localhost:9092 \
+  --describe \
+  --group n8n-sigma-aetl-validator
+You should see:
+
+Consumer assigned to partition(s)
+LAG decreasing as messages are consumed
+CONSUMER-ID showing n8n connection
+
+3. Monitor n8n Executions
+
+Go to n8n UI → Executions
+Send a test Kafka message
+New execution should appear automatically
+
+Common n8n Deployment Issues
+Issue: Queue Mode Without Workers
+Symptoms: Active toggle missing, triggers don't fire
+Fix:
+yaml# docker-compose.yml
+services:
+  n8n:
+    environment:
+      - EXECUTIONS_MODE=regular
+  # OR if using queue mode:
+  n8n-worker:
+    image: n8nio/n8n
+    command: worker
+    environment:
+      - EXECUTIONS_MODE=queue
+Issue: Webhook-Only Mode
+Symptoms: Only webhook triggers work
+Fix: Ensure N8N_DISABLE_PRODUCTION_MAIN_PROCESS=false
+Issue: License Restrictions
+Symptoms: Some trigger types unavailable
+Fix: Kafka Trigger is available in self-hosted n8n (no license needed)
+Minimal Kafka Trigger Test Workflow
+To verify Kafka infrastructure independently:
+json{
+  "name": "Kafka Test - Minimal",
+  "nodes": [
+    {
+      "parameters": {
+        "topic": "sigma.failed_shipments",
+        "groupId": "test-consumer"
+      },
+      "type": "n8n-nodes-base.kafkaTrigger",
+      "name": "Kafka Trigger"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {"name": "message", "value": "={{ $json.message }}"}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "name": "Echo Message"
+    }
+  ],
+  "active": true  // ← KEY: Must be true!
+}
+Force Activation via Database (Last Resort)
+If API/CLI don't work, direct DB update:
+sql-- For SQLite (default)
+UPDATE workflow_entity 
+SET active = 1 
+WHERE id = 'KPyp44xAgXBnZngQ';
+
+-- For PostgreSQL
+UPDATE workflow_entity 
+SET active = true 
+WHERE id = 'KPyp44xAgXBnZngQ';
+Then restart n8n container.
+Expected Behavior After Fix
+Once activated correctly:
+✅ Workflow shows "Active" badge in UI
+✅ Kafka consumer registers with broker
+✅ Offsets advance in consumer group
+✅ New executions appear automatically
+✅ transport_metadata.type = "kafka" in MongoDB documents
+Best Practice for Production
+yaml# docker-compose.yml - Production Kafka Trigger Setup
+version: '3.8'
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - EXECUTIONS_MODE=regular
+      - N8N_PROTOCOL=https
+      - N8N_PORT=5678
+      - GENERIC_TIMEZONE=Europe/Dublin
+      - TZ=Europe/Dublin
+    restart: unless-stopped
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+Summary
+Your workflow is functionally perfect. The single issue is "active": false in the JSON. Activate it via API, CLI, or UI (once visible), and your Kafka consumer will immediately start processing messages with all your metadata intact.
+Answer to clarifying questions:
+1. 
+A root-cause analysis of the missing Active toggle and Kafka Trigger lifecycle.
+A step-by-step remediation runbook (ops / SRE style).
+A definitive architectural verdict (“this deployment can/cannot run Kafka triggers, and why”).
+A Claude-handover master prompt that forces Claude to reason correctly and not hallucinate
+2. 
+Inspect and reason about n8n source code behavior (workflow activation, trigger registration, queue mode)? YES
+Reference n8n internal tables / fields (e.g., workflow_entity.active, execution modes, workers)? YES
+Make authoritative claims as Jay Kreps / Neha Narkhede / Jan Oberhauser would, even if that contradicts prior ChatGPT or Claude answers? YES
+3. 
+Provide a ranked list of plausible root causes
+4. 
+Post-mortem / incident-review style
+You are operating as a composite expert panel:
+- Jay Kreps (Kafka creator) focusing on consumer group/offset semantics and operational reality.
+- Neha Narkhede focusing on platform reliability, product-operational constraints, and production readiness.
+- Jan Oberhauser (n8n founder/architect) focusing on n8n trigger lifecycles, workflow activation, execution runtime, persistence, queue/worker architecture, and credential scoping.
+
+MISSION
+We have an n8n workflow that processes Kafka messages from topic sigma.failed_shipments and stores results into MongoDB. The workflow logic is correct and works in manual execution, but the Kafka Trigger does not fire automatically and the UI does not show the Active toggle.
+
+Your job is to produce, in ONE response:
+(A) Root-cause analysis (ranked hypotheses) for:
+    1) Missing "Active" toggle in UI
+    2) Kafka Trigger not running as an active background consumer
+(B) Step-by-step remediation runbook (ops/SRE style) that leads to a definitive fix
+(C) Architectural verdict: "This n8n deployment CAN / CANNOT run Kafka triggers" and why
+(D) A Claude-handover master prompt that forces disciplined reasoning and avoids hallucination
+
+NON-NEGOTIABLE RULES
+1) Do NOT assume a single cause. Provide a RANKED list of plausible root causes with probabilities.
+2) Every hypothesis must include:
+   - what evidence would confirm it
+   - what evidence would refute it
+   - exact commands / checks to gather the evidence
+3) Treat "workflow JSON shows active:false" as a relevant clue, NOT the conclusion.
+4) Do NOT redesign the workflow logic, schema, Kafka config, or MongoDB collections. This is trigger lifecycle / activation / deployment mode.
+5) Output must be post-mortem / incident-review style: Impact, Symptoms, Timeline assumptions, Root cause(s), Contributing factors, Corrective actions, Verification, Preventative controls.
+6) Where facts are missing, ask for the MINIMUM additional artifacts required OR provide a short “Collect These Artifacts” checklist with exact commands.
+
+INPUT ARTIFACTS
+- Workflow JSON (key facts):
+  - Workflow id: KPyp44xAgXBnZngQ
+  - Kafka Trigger node configured:
+      topic: sigma.failed_shipments
+      groupId: n8n-sigma-aetl-validator
+  - Workflow JSON property: "active": false
+  - Reported symptom: UI shows only “Saved / Publish” and no Active/Inactive toggle.
+  - Kafka CLI consumers work; offsets do not move due to n8n.
+  - Manual execution inserts into MongoDB correctly.
+
+DELIVERABLE STRUCTURE (MANDATORY HEADERS)
+1) Incident Summary
+2) Observations & Invariants (what we know vs what we must verify)
+3) Ranked Root-Cause Hypotheses (with confirm/refute tests)
+4) Remediation Runbook (step-by-step, branching by hypothesis)
+5) Verification Plan (Kafka group offsets + n8n logs + workflow state + UI state)
+6) Architectural Verdict (can/cannot run Kafka triggers; conditions)
+7) Prevention & Hardening (production guidance: topology, queue mode, workers, HA, offset strategy)
+8) Claude Handover Prompt (copy/paste)
+
+IMPORTANT TECHNICAL AREAS YOU MUST CONSIDER
+- n8n workflow activation: active flag, publish/draft model, RBAC, project scoping, user permissions
+- n8n deployment modes: main vs worker, queue mode vs regular, N8N_DISABLE_PRODUCTION_MAIN_PROCESS, webhooks-only patterns, scaling patterns
+- Trigger runtime: which process owns Kafka consumer, how it is registered, how it persists, what logs to expect
+- Kafka semantics: consumer group assignment, offset commits, auto commit vs manual commit, what happens when triggers crash/restart
+- DB state: workflow_entity.active (or equivalent), migrations, version compatibility
+
+Now produce the full response with the mandatory headers.
