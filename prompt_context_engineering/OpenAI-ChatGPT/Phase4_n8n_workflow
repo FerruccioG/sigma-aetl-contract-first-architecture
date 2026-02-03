@@ -1,0 +1,539 @@
+**Situation**  
+You are Lyra, a $1000/hour AI Prompt Optimization Consultant with 10+ years of experience helping professionals across industries unlock the full power of ChatGPT/GPT-4. Your clients range from marketing executives and technical leads to creative directors and knowledge workers. They come to you with unclear, incomplete, or inefficient prompts—and expect you to turn them into precision-crafted instructions that consistently generate superior results.
+
+**Task**  
+Apply your signature 4-D Optimization Framework to every client request:
+1. **Deconstruct** – Extract core intent, key entities, user expectations, and missing context  
+2. **Diagnose** – Audit for ambiguity, structural weaknesses, lack of specificity, or missing constraints  
+3. **Develop** – Select the best optimization techniques based on the prompt’s category (Creative, Technical, Educational, Complex), then rewrite the prompt for high performance  
+4. **Deliver** – Return a polished, ready-to-use prompt optimized for GPT-4’s capabilities, and provide guidance for effective usage
+
+**Objective**  
+Empower the user with a refined prompt that:
+- Achieves their intended outcome faster and with higher quality  
+- Uses GPT-4's strengths in reasoning, memory, formatting, and follow-up capability  
+- Aligns with professional standards in tone, structure, and precision  
+- Reflects your expertise as a high-trust AI consultant who adds measurable value  
+
+**Execution Rules**
+- Always operate in **DETAIL MODE** (ask 2–3 clarifying questions before delivering an optimized prompt)  
+- Always format responses using this template:
+- Focus optimization around these three dominant domains:
+   - **Marketing Content Creation** → emphasize conversion, brand tone, audience fit  
+   - **Technical Documentation** → clarity, step-by-step flow, technical accuracy  
+   - **Creative Writing Projects** → narrative development, stylistic tone, originality  
+
+**Platform-Specific Enhancements for GPT-4**
+- Leverage structured sections and markdown formatting  
+- Include conversation starters or natural continuation points  
+- Optimize for iterative dialog (break complex goals into manageable follow-up prompts)  
+- Avoid unnecessary verbosity—aim for elegance, not complexity  
+
+**Welcome Message (REQUIRED for First Contact)**  
+Display this onboarding message verbatim when first activated:
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better results.
+
+**What I need to know:**  
+• **Target AI:** ChatGPT, Claude, Gemini, or Other  
+• **Prompt Style:** DETAIL (I'll ask clarifying questions first) or BASIC (quick optimization)
+
+**Examples:**  
+• "DETAIL using ChatGPT – Write me a marketing email"  
+• "BASIC using Claude – Help with my resume"
+
+Just share your rough prompt and I’ll handle the optimization!
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+DETAIL using ChatGPT – Act as Jay Kreps — THE #1 Kafka expert on earth, Co-creator of Kafka, CEO & Co-Founder of Confluent and Neha Narkhede — Co-creator of Kafka and Jun Rao — Kafka Co-creator & Confluent Co-founder and Gwen Shapira — Principal Data Architect, ex-Confluent and Viktor Gamov — Kafka developer advocate (world-famous) and Robin Moffatt — Kafka, Streaming & ksqlDB Expert Kai Waehner — One of the world’s top event streaming architects, so thru you acting on ChatGPT they become my Kafka mentors and support during the effort of activating Kafka on my Docker and integrate Kafka metadata into my ETL metadata.
+
+Action: Recover old n8n workflows, specially ailnL2CjgyztQEl3|SIGMA-AELT Minimal Validator Test|Ferruccio Guicciardi <fguiccia@gmail.com>|project:admin workflow and make it work inside new n8n version 2.1.4
+
+Context: After n8n version 2.1.4 upgrade, the old workflows became invisible on n8n UI. More on context:  Claude’s analysis is directionally strong, and it matches your most important “smoking gun”:
+
+Your UPDATE workflow_entity SET projectId = ... failed with “no such column: projectId”
+⇒ that strongly suggests your DB schema is behind what n8n 2.1.4 expects, even though the application binary is 2.1.4.
+
+Below is the tightest next-step sequence (verification → migrate correctly → re-link → restart → re-check). No guesswork, only things we can prove with SQL and logs.
+
+1) Confirm whether workflow_entity.projectId exists (critical)
+
+Run:
+
+docker run --rm -it \
+  -v sigma-aetl-kafka_n8n_data:/data \
+  alpine sh -c '
+apk add --no-cache sqlite &&
+sqlite3 /data/database.sqlite "PRAGMA table_info(workflow_entity);"
+'
+
+
+Expected if schema is “new enough”: you should see a row where the second column is projectId.
+
+If you do not see projectId, you need to run db migrations properly.
+
+2) Check migrations table exists + last applied migrations
+docker run --rm -it \
+  -v sigma-aetl-kafka_n8n_data:/data \
+  alpine sh -c '
+apk add --no-cache sqlite &&
+sqlite3 /data/database.sqlite "
+SELECT name FROM sqlite_master WHERE type='\''table'\'' AND name LIKE '\''%migration%'\''; 
+"
+'
+
+
+Then (if a table exists, common names: migrations, migrations_sqlite):
+
+docker run --rm -it \
+  -v sigma-aetl-kafka_n8n_data:/data \
+  alpine sh -c '
+apk add --no-cache sqlite &&
+sqlite3 /data/database.sqlite "
+SELECT * FROM migrations ORDER BY timestamp DESC LIMIT 10;
+"
+'
+
+
+If migrations doesn’t exist, tell Claude later—but you can still proceed to try db:migrate.
+
+3) Run the migration the correct way for the n8n Docker image
+
+Your earlier attempt failed because you passed n8n migrate and migrate, and the container’s entrypoint already runs n8n. So you should pass only the subcommand.
+
+Option A (recommended): run migration inside the running container
+
+From your compose folder (~/sigma-aetl-kafka):
+
+docker compose exec n8n n8n db:migrate
+
+
+If you get “not found” for n8n in the container (unlikely), try:
+
+docker compose exec n8n /usr/local/bin/n8n db:migrate
+
+Option B: one-off migration container (no running n8n required)
+
+Stop n8n first:
+
+docker compose stop n8n
+
+
+Then run:
+
+docker run --rm -it \
+  -v sigma-aetl-kafka_n8n_data:/home/node/.n8n \
+  -e N8N_ENCRYPTION_KEY='WeUdXzPZT31S1h82M8vibJWjBCS8L02H' \
+  n8nio/n8n:2.1.4 \
+  db:migrate
+
+
+Key detail: include your N8N_ENCRYPTION_KEY so the migration run does not auto-generate a new config/key.
+
+4) Re-check schema after migration
+
+Re-run:
+
+docker run --rm -it \
+  -v sigma-aetl-kafka_n8n_data:/data \
+  alpine sh -c '
+apk add --no-cache sqlite &&
+sqlite3 /data/database.sqlite "PRAGMA table_info(workflow_entity);"
+'
+
+
+If you now see projectId, proceed.
+
+5) Populate workflow_entity.projectId for your 23 workflows
+
+This is safe and reversible.
+
+docker run --rm -it \
+  -v sigma-aetl-kafka_n8n_data:/data \
+  alpine sh -c '
+apk add --no-cache sqlite &&
+sqlite3 /data/database.sqlite "
+UPDATE workflow_entity
+SET projectId = '\''H2GJWoUSsXsS8l14'\''
+WHERE id IN (
+  SELECT workflowId FROM shared_workflow
+  WHERE projectId = '\''H2GJWoUSsXsS8l14'\''
+);
+SELECT COUNT(*) FROM workflow_entity WHERE projectId = '\''H2GJWoUSsXsS8l14'\'';
+"
+'
+
+
+Expected output: 23
+
+6) Align personal project role to what n8n expects (optional but prudent)
+
+You currently have project:admin. For a personal project, n8n may expect project:personalOwner. This should not be required, but it’s low-risk to match expectations:
+
+docker run --rm -it \
+  -v sigma-aetl-kafka_n8n_data:/data \
+  alpine sh -c '
+apk add --no-cache sqlite &&
+sqlite3 /data/database.sqlite "
+UPDATE project_relation
+SET role = '\''project:personalOwner'\''
+WHERE projectId = '\''H2GJWoUSsXsS8l14'\''
+  AND userId = '\''fbe0f72a-c8ac-45c4-b707-b92c5d56e330'\'';
+SELECT projectId,userId,role FROM project_relation
+WHERE userId = '\''fbe0f72a-c8ac-45c4-b707-b92c5d56e330'\'';
+"
+'
+
+7) Restart n8n and capture the most useful logs for Claude (if still empty)
+docker compose up -d n8n
+docker compose logs --tail 200 n8n
+
+
+If UI still shows zero, the most valuable additional data to collect is:
+
+(a) Confirm n8n is using the DB you edited
+
+Inside the n8n container:
+
+docker compose exec n8n sh -lc 'ls -l /home/node/.n8n && ls -l /home/node/.n8n/database.sqlite'
+
+
+Then, from alpine, check that same DB file is the one with projectId:
+
+docker run --rm -it \
+  -v sigma-aetl-kafka_n8n_data:/data \
+  alpine sh -c '
+apk add --no-cache sqlite &&
+sqlite3 /data/database.sqlite "SELECT COUNT(*) FROM workflow_entity;"
+'
+
+
+If these diverge, you’ve been editing a different SQLite file than the container uses.
+
+(b) Query for “workflow filters” columns added by migrations
+
+After migrations, run:
+
+docker run --rm -it \
+  -v sigma-aetl-kafka_n8n_data:/data \
+  alpine sh -c '
+apk add --no-cache sqlite &&
+sqlite3 /data/database.sqlite "PRAGMA table_info(workflow_entity);"
+'
+
+
+and paste it to Claude if it still fails.
+
+Bottom line
+
+You are not “in the darkness.” Your SQL join already proves the logical bindings. The remaining likely blocker is schema mismatch (missing migrated columns) and/or n8n pointing at a different SQLite file than the one you edited.
+
+If you run steps 1–5, you’ll either:
+
+make the workflows appear, or
+
+produce a very tight evidence package for Claude: “migrations did/didn’t run, projectId exists/doesn’t, n8n DB path verified/mismatched.”
+
+If you want, paste back only:
+
+output of PRAGMA table_info(workflow_entity); (before + after migration attempt), and
+
+output of docker compose exec n8n sh -lc 'ls -l /home/node/.n8n'
+
+…and I will tell you exactly which branch you are in (schema vs wrong DB file) and the next command to run.
+
+ChatGPT window too slow. I'm drifting now to new ChatGPT window. Please summarize.
+
+Below is a clean, concise handover summary you can paste into a new ChatGPT (or Claude) window to preserve full context and avoid re-explaining.
+
+n8n 2.1.4 – Workflow Visibility Failure After Project Binding
+
+Context + What Has Been Proven So Far
+
+1. Original Problem
+
+After upgrading / running n8n 2.1.4, all existing workflows and credentials are invisible in the UI, despite clearly existing in the database.
+
+Critical workflow:
+
+SIGMA-AELT Minimal Validator Test (ID: ailnL2CjgyztQEl3)
+
+2. Environment
+
+n8n version: 2.1.4 (Docker)
+
+Database: SQLite
+
+Deployment: Docker Compose on Linux VM
+
+User: fbe0f72a-c8ac-45c4-b707-b92c5d56e330
+
+Project:
+
+ID: H2GJWoUSsXsS8l14
+
+Type: personal
+
+Name: Ferruccio Guicciardi <fguiccia@gmail.com>
+
+3. What We Have PROVEN (Backend is Correct)
+
+All backend integrity checks PASS.
+
+Workflows exist
+SELECT COUNT(*) FROM workflow_entity;
+-- 23
+
+All workflows have valid nodes
+SELECT COUNT(*) FROM workflow_entity
+WHERE nodes IS NOT NULL AND LENGTH(nodes) > 10;
+-- 23
+
+All workflows are linked to project
+SELECT COUNT(*) FROM shared_workflow
+WHERE projectId = 'H2GJWoUSsXsS8l14';
+-- 23
+
+No orphaned workflows
+SELECT COUNT(*)
+FROM workflow_entity w
+LEFT JOIN shared_workflow s ON s.workflowId = w.id
+WHERE s.projectId IS NULL;
+-- 0
+
+User is correctly bound to project
+SELECT projectId, userId, role
+FROM project_relation
+WHERE userId = 'fbe0f72a-c8ac-45c4-b707-b92c5d56e330';
+-- role = project:admin
+
+End-to-end join proves visibility SHOULD work
+SELECT w.id, w.name, p.name, pr.role
+FROM workflow_entity w
+JOIN shared_workflow sw ON sw.workflowId = w.id
+JOIN project p ON p.id = sw.projectId
+JOIN project_relation pr ON pr.projectId = p.id
+WHERE pr.userId = 'fbe0f72a-c8ac-45c4-b707-b92c5d56e330';
+-- returns all 23 workflows
+
+
+Conclusion:
+From a relational / permission standpoint, the UI should show all workflows.
+
+4. Critical Red Flag (Most Important Finding)
+
+This command FAILED:
+
+UPDATE workflow_entity
+SET projectId = 'H2GJWoUSsXsS8l14';
+
+
+Error:
+
+no such column: projectId
+
+Meaning
+
+n8n 2.1.4 expects workflow_entity.projectId
+
+That column does not exist
+
+Therefore database migrations were NOT applied, even though the app version is 2.1.4
+
+This strongly suggests:
+
+Schema is older than the application
+→ UI filtering logic depends on columns that don’t exist
+
+5. UI Symptoms
+
+n8n UI loads
+
+Login works
+
+Project is visible
+
+Workflow list is empty
+
+No errors in UI
+
+No errors in startup logs
+
+API /api/v1/workflows requires API key, so UI filtering logic is opaque
+
+6. Attempted Fixes (Already Tried)
+
+Manually fixing shared_workflow
+
+Fixing project_relation
+
+Setting workflows active = 1
+
+Full docker restart
+
+Full compose down/up
+
+Verified correct DB volume
+
+Manual JSON extraction from SQLite succeeded
+
+None fixed UI visibility
+
+7. Likely Root Cause (Very High Confidence)
+
+n8n 2.1.4 introduced strict project binding AND requires new DB columns.
+Migrations were never executed successfully.
+
+Specifically missing:
+
+workflow_entity.projectId
+
+Possibly similar columns on credentials_entity
+
+Without these:
+
+Backend SQL joins work
+
+UI queries silently filter everything out
+
+8. What We Need Help With (For Next Assistant / Claude)
+Primary Goal
+
+Make workflows and credentials visible in n8n 2.1.4 UI
+
+Specifically ask for:
+
+Correct way to run n8n db:migrate inside Docker
+
+SQLite
+
+Existing volume
+
+Without generating a new encryption key
+
+How to confirm:
+
+PRAGMA table_info(workflow_entity);
+
+
+includes projectId
+
+If migrations cannot be run:
+
+Safest manual schema patch strategy
+
+If UI still fails:
+
+Confirm exact DB path n8n container is using
+
+As a fallback:
+
+Validate clean manual import path for
+SIGMA-AELT Minimal Validator Test
+
+9. Safe Fallback (Already Prepared)
+
+All workflows were successfully exported from SQLite as JSON.
+If schema repair fails, we can:
+
+Create a fresh workflow in UI
+
+Import JSON
+
+Move on with SIGMA-AELT project
+
+Final One-Line Diagnosis
+
+This is not a data problem, not a permissions problem, not a Docker problem.
+It is a failed / missing n8n database migration after the 2.1.4 project-binding change.
+
+You can now paste this into:
+
+a new ChatGPT window, or
+
+Claude, verbatim
+
+If you want, in the next window we can focus exclusively on the correct migration command, with zero re-explaining.
+
+Format: Step by Step instructions, code, diagrams, etc.
+
+Please ask me clarifying questions before continuing.
+Answer to clarifying questions:
+1. SQLite
+2. From docker-compose.yml:
+ n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    volumes:
+      - sigma-aetl-kafka_n8n_data:/home/node/.n8n
+    environment:
+      - N8N_ENCRYPTION_KEY=WeUdXzPZT31S1h82M8vibJWjBCS8L02H
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - N8N_SECURE_COOKIE=false
+3. Yes.  N8N_ENCRYPTION_KEY=WeUdXzPZT31S1h82M8vibJWjBCS8L02H
+4. I just want my old workflows and credentials back, so I dont care with credentials/decryption need to be changed in the process.
+5. Required outputs:
+╭─  sigma@sigma-linux-dev  ~/sigma-aetl-kafka  03:05─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  15:05:41
+╰─ ❯ docker compose exec n8n sh -lc 'ls -la /home/node/.n8n'
+total 4668
+drwxr-sr-x    6 node     node          4096 Jan  2 14:57 .
+drwxr-sr-x    1 node     node          4096 Dec 31 14:49 ..
+drwxr-sr-x    2 node     node          4096 Dec 30 16:01 binaryData
+-rw-------    1 node     node            56 Dec 30 16:00 config
+-rw-r--r--    1 node     node             0 Jan  2 14:57 crash.journal
+-rw-r--r--    1 node     node        585728 Dec 30 16:00 database.sqlite
+-rw-r--r--    1 node     node         32768 Jan  2 14:57 database.sqlite-shm
+-rw-r--r--    1 node     node       4124152 Dec 31 14:51 database.sqlite-wal
+drwxr-sr-x    2 node     node          4096 Dec 30 16:01 git
+-rw-r--r--    1 node     node           564 Dec 31 14:51 n8nEventLog-1.log
+-rw-r--r--    1 node     node             0 Dec 31 13:55 n8nEventLog-2.log
+-rw-r--r--    1 node     node          1128 Dec 31 13:54 n8nEventLog-3.log
+-rw-r--r--    1 node     node             0 Jan  2 14:57 n8nEventLog.log
+drwxr-sr-x    2 node     node          4096 Dec 30 16:00 nodes
+drwxr-sr-x    2 node     node          4096 Dec 30 16:01 ssh
+╭─  sigma@sigma-linux-dev  ~/sigma-aetl-kafka─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  15:05:50
+╰─ ❯ docker compose exec n8n n8n --version
+2.1.4
+╭─  sigma@sigma-linux-dev  ~/sigma-aetl-kafka─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  15:05:59
+╰─ ❯
+DETAIL using ChatGPT — You are my senior incident-response and platform engineer for n8n + SQLite in Docker. 
+Adopt the technical rigor and mentoring style of elite Kafka practitioners (Jay Kreps, Neha Narkhede, Jun Rao, Gwen Shapira, Viktor Gamov, Robin Moffatt, Kai Waehner) but prioritize correctness and reproducibility over persona voice. Treat them as “mentors” for disciplined diagnostics, not as a reason to discuss Kafka.
+
+MISSION
+Recover old n8n workflows and credentials that became invisible after upgrading to n8n 2.1.4 and its project-binding model. The target is to make all 23 existing workflows visible in the UI again, including:
+- Workflow ID: ailnL2CjgyztQEl3
+- Name: SIGMA-AELT Minimal Validator Test
+
+ENVIRONMENT FACTS (do not ask me to repeat these)
+- n8n runs in Docker Compose
+- image: n8nio/n8n:latest (container currently reports n8n --version = 2.1.4)
+- SQLite database: /home/node/.n8n/database.sqlite
+- Volume mapping: sigma-aetl-kafka_n8n_data:/home/node/.n8n
+- N8N_ENCRYPTION_KEY is set and stable: WeUdXzPZT31S1h82M8vibJWjBCS8L02H
+- Files exist in /home/node/.n8n: database.sqlite plus -wal and -shm
+- Symptom: UI shows zero workflows after upgrade; DB still contains workflows and shared_workflow relations
+- Smoking gun: SQL UPDATE on workflow_entity.projectId previously failed with “no such column: projectId” (schema mismatch)
+
+OUTPUT REQUIREMENTS
+Produce a step-by-step recovery runbook with:
+1) Verification steps (SQL + logs) with exact commands to run via docker compose exec and/or an alpine sqlite container.
+2) A safe backup step before any writes.
+3) The correct way to run n8n migrations for SQLite in Docker (db:migrate), including “what success looks like” and how to confirm it (PRAGMA table_info).
+4) A deterministic rebind procedure after migrations (set workflow_entity.projectId, validate shared_workflow/project_relation, and role normalization if needed).
+5) Validation steps to prove UI should show workflows, and what to capture if it still doesn’t.
+6) Rollback instructions (restore DB from backup).
+7) A short “root cause” explanation at the end.
+
+HARD CONSTRAINTS
+- Do not guess. Every step must be testable with a command and an expected output.
+- Assume SQLite WAL/SHM exists: if you instruct DB writes, require stopping n8n first to avoid WAL inconsistency.
+- Keep the runbook concise, but complete. Use numbered steps.
+- Include a small ASCII diagram of the data model involved: workflow_entity ↔ shared_workflow ↔ project ↔ project_relation ↔ user.
+
+START BY ASKING ME 2 QUESTIONS ONLY
+Ask only the two most decision-critical questions not already answered by the facts above. Then proceed with the runbook.
