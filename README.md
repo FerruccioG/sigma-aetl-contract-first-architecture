@@ -1,6 +1,4 @@
 # SIGMA-AETL — Contract-First Architecture (v1.0)
-![SIGMA-AETL Architecture](architecture/diagrams/GOOD_CANDIDATE_0027_BEST.png)
-
 ![Status](https://img.shields.io/badge/status-contract--frozen_v1.0-blue)
 ![Architecture](https://img.shields.io/badge/architecture-contract--first-success)
 ![Kafka](https://img.shields.io/badge/kafka-event--driven-black)
@@ -10,6 +8,7 @@
 ![Idempotency](https://img.shields.io/badge/idempotency-enforced-important)
 ![AI](https://img.shields.io/badge/private%20AI-ollama-purple)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
+![SIGMA-AETL Architecture](architecture/diagrams/GOOD_CANDIDATE_0027_BEST.png)
 
 **SIGMA-AETL v1.0** is a reference implementation of a **contract-first, Kafka event-driven ingestion architecture** with explicit validation boundaries, deterministic idempotency, production-grade failure isolation, and optional **private AI-assisted diagnostics via Ollama**.
 
@@ -201,6 +200,7 @@ It is not intended to be deployed as-is without review.
 **v1.0.0-contract-frozen**
 
 This release represents a fully validated, production-grade contract-first ingestion architecture.
+
 
 
 
