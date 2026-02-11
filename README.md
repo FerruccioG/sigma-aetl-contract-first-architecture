@@ -1,5 +1,3 @@
-# sigma-aetl-contract-first-architecture
-
 # SIGMA-AETL — Contract-First Architecture (v1.0)
 
 ![Status](https://img.shields.io/badge/status-contract--frozen_v1.0-blue)
@@ -202,5 +200,6 @@ It is not intended to be deployed as-is without review.
 **v1.0.0-contract-frozen**
 
 This release represents a fully validated, production-grade contract-first ingestion architecture.
+
 
 
