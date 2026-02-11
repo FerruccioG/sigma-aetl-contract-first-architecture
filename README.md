@@ -1,4 +1,8 @@
 # SIGMA-AETL — Contract-First Architecture (v1.0)
+
+![SIGMA-AETL Architecture](architecture/diagrams/GOOD_CANDIDATE_0027_BEST.png)
+> Architecture overview: Kafka transports events. Pydantic validator enforces contracts. AI (Ollama/Qwen) is advisory only.
+
 ![Status](https://img.shields.io/badge/status-contract--frozen_v1.0-blue)
 ![Architecture](https://img.shields.io/badge/architecture-contract--first-success)
 ![Kafka](https://img.shields.io/badge/kafka-event--driven-black)
@@ -8,11 +12,29 @@
 ![Idempotency](https://img.shields.io/badge/idempotency-enforced-important)
 ![AI](https://img.shields.io/badge/private%20AI-ollama-purple)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
-![SIGMA-AETL Architecture](architecture/diagrams/GOOD_CANDIDATE_0027_BEST.png)
 
-**SIGMA-AETL v1.0** is a reference implementation of a **contract-first, Kafka event-driven ingestion architecture** with explicit validation boundaries, deterministic idempotency, production-grade failure isolation, and optional **private AI-assisted diagnostics via Ollama**.
 
-This repository demonstrates how to design ingestion systems that are **correct by construction**, resilient to upstream instability, and safe to operate in production.
+IGMA-AETL v1.0 is a reference implementation of a **contract-first, event-driven ingestion system**.
+
+The system is intentionally designed around a strict validation boundary:
+- Validation occurs **before** transformation or persistence.
+- Schemas are immutable and executable.
+- Failure is preserved, not hidden.
+- Transport (Kafka) does not determine truth.
+- The validator is the system authority.
+
+This repository demonstrates how to design ingestion systems that are:
+- Correct by construction
+- Deterministic under replay
+- Resilient to upstream instability
+- Safe to operate in production
+
+v1.0 is contract-frozen.  
+All schema or validation changes require a new version.
+
+<p align="center">
+  <img src="architecture/diagrams/SIGMA-AETL_Contract_Validator_v1_0_PROD.png" width="900">
+</p>
 
 ---
 
@@ -200,6 +222,7 @@ It is not intended to be deployed as-is without review.
 **v1.0.0-contract-frozen**
 
 This release represents a fully validated, production-grade contract-first ingestion architecture.
+
 
 
 
