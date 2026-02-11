@@ -1,7 +1,14 @@
 # SIGMA-AETL — Contract-First Architecture (v1.0)
 
 ![SIGMA-AETL Architecture](architecture/diagrams/GOOD_CANDIDATE_0027_BEST.png)
-> Architecture overview: Kafka transports events. Pydantic validator enforces contracts. AI (Ollama/Qwen) is advisory only.
+> Architecture model:
+Kafka transports events.  
+Pydantic enforces contracts.  
+MongoDB persists validated state.  
+AI (Ollama / Qwen) operates strictly in advisory mode.
+Validation defines the system boundary.
+Everything upstream is transport.
+Everything downstream is state.
 
 ![Status](https://img.shields.io/badge/status-contract--frozen_v1.0-blue)
 ![Architecture](https://img.shields.io/badge/architecture-contract--first-success)
@@ -222,6 +229,7 @@ It is not intended to be deployed as-is without review.
 **v1.0.0-contract-frozen**
 
 This release represents a fully validated, production-grade contract-first ingestion architecture.
+
 
 
 
