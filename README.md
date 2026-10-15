@@ -24,7 +24,7 @@ SIGMA-AETL — Contract-First Architecture (v1.0)
 
 🎬 Watch SIGMA-AETL in Action
 
-▶ Watch the 3-Minute AI Automation Demonstration on YouTube
+▶ **[Watch the 3-Minute AI Automation Demo on YouTube](https://www.youtube.com/watch?v=sdESMpanjrQ)**
 
 A narrated walkthrough of this independent reference implementation, showing Kafka ingestion, n8n workflow orchestration, FastAPI/Pydantic contract validation, successful and rejected processing paths, Ollama integration, and MongoDB persistence.
 Viewing tip: Select 1080p HD or higher in YouTube’s Quality settings to read the technical screens clearly.
