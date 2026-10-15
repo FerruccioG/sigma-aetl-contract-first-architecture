@@ -20,6 +20,14 @@ Everything downstream is state.
 ![AI](https://img.shields.io/badge/private%20AI-ollama-purple)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
+SIGMA-AETL — Contract-First Architecture (v1.0)
+
+🎬 Watch SIGMA-AETL in Action
+
+▶ Watch the 3-Minute AI Automation Demonstration on YouTube
+
+A narrated walkthrough of this independent reference implementation, showing Kafka ingestion, n8n workflow orchestration, FastAPI/Pydantic contract validation, successful and rejected processing paths, Ollama integration, and MongoDB persistence.
+Viewing tip: Select 1080p HD or higher in YouTube’s Quality settings to read the technical screens clearly.
 
 IGMA-AETL v1.0 is a reference implementation of a **contract-first, event-driven ingestion system**.
 
